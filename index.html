@@ -1,0 +1,1383 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>世界足坛数据库 1950-2026</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f6f2;
+      --ink: #1e2522;
+      --muted: #66706b;
+      --line: #d9dfd7;
+      --panel: #ffffff;
+      --green: #1f6f55;
+      --deep: #173832;
+      --gold: #c48a2c;
+      --red: #b64d3f;
+      --blue: #2f6690;
+      --shadow: 0 16px 38px rgba(31, 44, 38, .10);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(31, 111, 85, .08), transparent 300px),
+        var(--bg);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .shell {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 22px 0 34px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: end;
+      padding: 18px 0 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 32px;
+      line-height: 1.1;
+      font-weight: 850;
+    }
+
+    .sub {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(72px, 1fr));
+      gap: 8px;
+      min-width: 360px;
+    }
+
+    .stat {
+      padding: 10px 12px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 8px 18px rgba(31, 44, 38, .06);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: grid;
+      grid-template-columns: minmax(180px, 1.2fr) repeat(4, minmax(120px, .75fr));
+      gap: 10px;
+      padding: 14px 0;
+      background: rgba(244, 246, 242, .94);
+      backdrop-filter: blur(10px);
+    }
+
+    input,
+    select,
+    button {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      font: inherit;
+      outline: none;
+    }
+
+    input,
+    select {
+      padding: 0 12px;
+    }
+
+    input:focus,
+    select:focus,
+    button:focus-visible {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(31, 111, 85, .14);
+    }
+
+    .modes {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin: 6px 0 16px;
+    }
+
+    button {
+      cursor: pointer;
+      font-weight: 750;
+      transition: transform .16s ease, border-color .16s ease, background .16s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(31, 111, 85, .45);
+    }
+
+    button.active {
+      background: var(--deep);
+      color: #fff;
+      border-color: var(--deep);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: .48;
+      transform: none;
+    }
+
+    .mini {
+      min-height: 30px;
+      padding: 0 10px;
+      font-size: 12px;
+    }
+
+    .spotlight {
+      display: none;
+      margin: 2px 0 18px;
+    }
+
+    .spotlight.show {
+      display: block;
+    }
+
+    .pitch {
+      display: grid;
+      gap: 12px;
+      min-height: 460px;
+      padding: 18px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, .45);
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, .10) 50%, transparent 50%) 0 0 / 26px 26px,
+        linear-gradient(180deg, #287a57, #16513f);
+      box-shadow: var(--shadow);
+    }
+
+    .pitch-row {
+      display: grid;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .pitch-row.forwards {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .pitch-row.mids {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .pitch-row.defs {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .pitch-row.gk {
+      grid-template-columns: minmax(0, .8fr);
+      justify-content: center;
+    }
+
+    .slot {
+      min-height: 86px;
+      display: grid;
+      align-content: center;
+      gap: 4px;
+      padding: 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .88);
+      border: 1px solid rgba(255, 255, 255, .55);
+      text-align: center;
+    }
+
+    .slot b {
+      font-size: 16px;
+      line-height: 1.2;
+    }
+
+    .slot small {
+      color: #52635c;
+    }
+
+    .slot.empty {
+      color: rgba(255, 255, 255, .74);
+      background: rgba(255, 255, 255, .16);
+      border: 1px dashed rgba(255, 255, 255, .55);
+    }
+
+    .slot.empty small {
+      color: rgba(255, 255, 255, .74);
+    }
+
+    .choice-bar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .choice-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 7px;
+    }
+
+    .rank-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 10px;
+    }
+
+    .rank-item {
+      display: grid;
+      grid-template-columns: 40px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      min-height: 72px;
+      padding: 12px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 10px 22px rgba(31, 44, 38, .07);
+    }
+
+    .rank-no {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #f3d39f;
+      color: #5c3511;
+      font-weight: 850;
+    }
+
+    .rank-item.empty {
+      color: var(--muted);
+      background: rgba(255, 255, 255, .62);
+      border-style: dashed;
+      box-shadow: none;
+    }
+
+    .rank-actions {
+      display: grid;
+      grid-template-columns: repeat(3, 30px);
+      gap: 4px;
+    }
+
+    .rank-actions .mini,
+    .slot .mini {
+      width: auto;
+    }
+
+    .section-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin: 12px 0 10px;
+    }
+
+    .section-line h2 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(218px, 1fr));
+      gap: 10px;
+    }
+
+    .player {
+      display: grid;
+      gap: 8px;
+      min-height: 154px;
+      padding: 13px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: 0 10px 22px rgba(31, 44, 38, .06);
+    }
+
+    .player.selected {
+      border-color: rgba(31, 111, 85, .72);
+      box-shadow: 0 12px 26px rgba(31, 111, 85, .12);
+    }
+
+    .player-head {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px;
+      align-items: start;
+    }
+
+    .flag {
+      font-size: 25px;
+      line-height: 1;
+    }
+
+    .player b {
+      display: block;
+      font-size: 16px;
+      line-height: 1.23;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-self: end;
+    }
+
+    .chip {
+      padding: 4px 7px;
+      border-radius: 999px;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 750;
+      line-height: 1;
+    }
+
+    .pos-GK { background: var(--blue); }
+    .pos-DEF { background: var(--green); }
+    .pos-MID { background: var(--gold); color: #2c1b06; }
+    .pos-FWD { background: var(--red); }
+    .tag { background: #273733; }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+      align-self: end;
+    }
+
+    .actions button.is-picked {
+      background: var(--deep);
+      color: #fff;
+      border-color: var(--deep);
+    }
+
+    .empty {
+      display: none;
+      padding: 24px;
+      border: 1px dashed #b8c2bc;
+      border-radius: 8px;
+      color: var(--muted);
+      text-align: center;
+      background: rgba(255, 255, 255, .5);
+    }
+
+    .empty.show {
+      display: block;
+    }
+
+    footer {
+      margin-top: 22px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      text-align: right;
+    }
+
+    @media (max-width: 820px) {
+      header {
+        grid-template-columns: 1fr;
+      }
+
+      .stats {
+        min-width: 0;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .toolbar {
+        position: static;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .toolbar input {
+        grid-column: 1 / -1;
+      }
+
+      .modes {
+        grid-template-columns: 1fr;
+      }
+
+      .pitch {
+        min-height: auto;
+        padding: 12px;
+      }
+
+      .pitch-row.forwards,
+      .pitch-row.mids,
+      .pitch-row.defs {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .pitch-row.gk {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .shell {
+        width: min(100% - 18px, 1180px);
+      }
+
+      h1 {
+        font-size: 25px;
+      }
+
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .grid,
+      .rank-list {
+        grid-template-columns: 1fr;
+      }
+
+      .choice-bar,
+      .rank-item {
+        grid-template-columns: 1fr;
+      }
+
+      .choice-actions {
+        justify-content: stretch;
+      }
+
+      .choice-actions .mini {
+        flex: 1 1 auto;
+      }
+
+      .actions {
+        grid-template-columns: 1fr;
+      }
+
+      .rank-actions {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .pitch-row.forwards,
+      .pitch-row.mids,
+      .pitch-row.defs {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <h1>世界足坛数据库 1950-2026</h1>
+        <div class="sub">精选球员 · 国旗索引 · 自选历史最佳阵容 · 自选历史最佳10人</div>
+      </div>
+      <div class="stats" aria-label="统计">
+        <div class="stat"><strong id="totalCount">0</strong><span>球员</span></div>
+        <div class="stat"><strong id="shownCount">0</strong><span>当前</span></div>
+        <div class="stat"><strong id="xiCount">0/11</strong><span>我的阵容</span></div>
+        <div class="stat"><strong id="topCount">0/10</strong><span>我的前十</span></div>
+      </div>
+    </header>
+
+    <section class="toolbar" aria-label="筛选">
+      <input id="search" type="search" placeholder="搜索中文名 / 昵称 / 球员 / 国家 / 俱乐部">
+      <select id="era"></select>
+      <select id="position"></select>
+      <select id="country"></select>
+      <select id="sort"></select>
+    </section>
+
+    <section class="modes" aria-label="视图">
+      <button class="active" data-mode="all">全部精选</button>
+      <button data-mode="xi">选最佳阵容</button>
+      <button data-mode="top10">选历史前十</button>
+    </section>
+
+    <section id="spotlight" class="spotlight" aria-live="polite"></section>
+
+    <div class="section-line">
+      <h2 id="listTitle">球员列表</h2>
+      <div class="hint" id="listHint"></div>
+    </div>
+    <section id="players" class="grid"></section>
+    <div id="empty" class="empty">没有匹配结果</div>
+    <footer>制作者：锅巴32595</footer>
+  </main>
+
+  <script>
+    const players = [
+      {name:"Pele", flag:"🇧🇷", country:"Brazil", pos:"FWD", era:"1950s-1970s", years:"1956-1977", note:"Santos, New York Cosmos", top10:3, xi:"FWD"},
+      {name:"Diego Maradona", flag:"🇦🇷", country:"Argentina", pos:"MID", era:"1970s-1990s", years:"1976-1997", note:"Boca Juniors, Napoli, Barcelona", top10:2, xi:"MID"},
+      {name:"Lionel Messi", flag:"🇦🇷", country:"Argentina", pos:"FWD", era:"2000s-2020s", years:"2004-", note:"Barcelona, PSG, Inter Miami", top10:1, xi:"FWD"},
+      {name:"Cristiano Ronaldo", flag:"🇵🇹", country:"Portugal", pos:"FWD", era:"2000s-2020s", years:"2002-", note:"Sporting CP, Man United, Real Madrid, Juventus, Al Nassr", top10:4, xi:"FWD"},
+      {name:"Johan Cruyff", flag:"🇳🇱", country:"Netherlands", pos:"MID", era:"1960s-1980s", years:"1964-1984", note:"Ajax, Barcelona, Feyenoord", top10:5},
+      {name:"Franz Beckenbauer", flag:"🇩🇪", country:"Germany", pos:"DEF", era:"1960s-1980s", years:"1964-1983", note:"Bayern Munich, New York Cosmos", top10:6, xi:"DEF"},
+      {name:"Zinedine Zidane", flag:"🇫🇷", country:"France", pos:"MID", era:"1980s-2000s", years:"1989-2006", note:"Cannes, Bordeaux, Juventus, Real Madrid", top10:7, xi:"MID"},
+      {name:"Ronaldo Nazario", flag:"🇧🇷", country:"Brazil", pos:"FWD", era:"1990s-2010s", years:"1993-2011", note:"Cruzeiro, PSV, Barcelona, Inter, Real Madrid", top10:8},
+      {name:"Alfredo Di Stefano", flag:"🇦🇷🇪🇸", country:"Argentina / Spain", pos:"FWD", era:"1950s-1960s", years:"1945-1966", note:"River Plate, Millonarios, Real Madrid", top10:9},
+      {name:"Michel Platini", flag:"🇫🇷", country:"France", pos:"MID", era:"1970s-1980s", years:"1972-1987", note:"Nancy, Saint-Etienne, Juventus", top10:10},
+      {name:"Lev Yashin", flag:"🇷🇺", country:"Soviet Union", pos:"GK", era:"1950s-1970s", years:"1950-1970", note:"Dynamo Moscow", xi:"GK"},
+      {name:"Cafu", flag:"🇧🇷", country:"Brazil", pos:"DEF", era:"1990s-2000s", years:"1989-2008", note:"Sao Paulo, Roma, Milan", xi:"DEF"},
+      {name:"Paolo Maldini", flag:"🇮🇹", country:"Italy", pos:"DEF", era:"1980s-2000s", years:"1985-2009", note:"Milan", xi:"DEF"},
+      {name:"Roberto Carlos", flag:"🇧🇷", country:"Brazil", pos:"DEF", era:"1990s-2010s", years:"1991-2015", note:"Palmeiras, Inter, Real Madrid", xi:"DEF"},
+      {name:"Xavi", flag:"🇪🇸", country:"Spain", pos:"MID", era:"1990s-2010s", years:"1998-2019", note:"Barcelona, Al Sadd", xi:"MID"},
+      {name:"Ferenc Puskas", flag:"🇭🇺", country:"Hungary", pos:"FWD", era:"1950s-1960s", years:"1943-1966", note:"Honved, Real Madrid"},
+      {name:"Garrincha", flag:"🇧🇷", country:"Brazil", pos:"FWD", era:"1950s-1970s", years:"1951-1972", note:"Botafogo, Corinthians"},
+      {name:"Eusebio", flag:"🇵🇹", country:"Portugal", pos:"FWD", era:"1960s-1970s", years:"1957-1979", note:"Benfica"},
+      {name:"George Best", flag:"🇬🇧", country:"Northern Ireland", pos:"FWD", era:"1960s-1980s", years:"1963-1984", note:"Manchester United, Fulham"},
+      {name:"Gerd Muller", flag:"🇩🇪", country:"Germany", pos:"FWD", era:"1960s-1980s", years:"1963-1981", note:"Bayern Munich, Fort Lauderdale Strikers"},
+      {name:"Bobby Charlton", flag:"🇬🇧", country:"England", pos:"MID", era:"1950s-1970s", years:"1956-1976", note:"Manchester United, Preston"},
+      {name:"Gordon Banks", flag:"🇬🇧", country:"England", pos:"GK", era:"1950s-1970s", years:"1958-1978", note:"Leicester City, Stoke City"},
+      {name:"Dino Zoff", flag:"🇮🇹", country:"Italy", pos:"GK", era:"1960s-1980s", years:"1961-1983", note:"Napoli, Juventus"},
+      {name:"Bobby Moore", flag:"🇬🇧", country:"England", pos:"DEF", era:"1950s-1970s", years:"1958-1978", note:"West Ham, Fulham"},
+      {name:"Carlos Alberto", flag:"🇧🇷", country:"Brazil", pos:"DEF", era:"1960s-1980s", years:"1963-1982", note:"Fluminense, Santos, New York Cosmos"},
+      {name:"Nilton Santos", flag:"🇧🇷", country:"Brazil", pos:"DEF", era:"1950s-1960s", years:"1948-1964", note:"Botafogo"},
+      {name:"Didi", flag:"🇧🇷", country:"Brazil", pos:"MID", era:"1950s-1960s", years:"1946-1966", note:"Fluminense, Botafogo, Real Madrid"},
+      {name:"Raymond Kopa", flag:"🇫🇷", country:"France", pos:"MID", era:"1950s-1960s", years:"1949-1967", note:"Reims, Real Madrid"},
+      {name:"Just Fontaine", flag:"🇫🇷", country:"France", pos:"FWD", era:"1950s-1960s", years:"1950-1962", note:"Nice, Reims"},
+      {name:"Giacinto Facchetti", flag:"🇮🇹", country:"Italy", pos:"DEF", era:"1960s-1970s", years:"1960-1978", note:"Inter"},
+      {name:"Jairzinho", flag:"🇧🇷", country:"Brazil", pos:"FWD", era:"1960s-1980s", years:"1959-1982", note:"Botafogo, Marseille, Cruzeiro"},
+      {name:"Rivelino", flag:"🇧🇷", country:"Brazil", pos:"MID", era:"1960s-1980s", years:"1965-1981", note:"Corinthians, Fluminense"},
+      {name:"Zico", flag:"🇧🇷", country:"Brazil", pos:"MID", era:"1970s-1990s", years:"1971-1994", note:"Flamengo, Udinese, Kashima Antlers"},
+      {name:"Socrates", flag:"🇧🇷", country:"Brazil", pos:"MID", era:"1970s-1980s", years:"1974-1989", note:"Corinthians, Fiorentina"},
+      {name:"Kenny Dalglish", flag:"🇬🇧", country:"Scotland", pos:"FWD", era:"1960s-1990s", years:"1969-1990", note:"Celtic, Liverpool"},
+      {name:"Kevin Keegan", flag:"🇬🇧", country:"England", pos:"FWD", era:"1960s-1980s", years:"1968-1985", note:"Liverpool, Hamburg, Newcastle"},
+      {name:"Paolo Rossi", flag:"🇮🇹", country:"Italy", pos:"FWD", era:"1970s-1980s", years:"1973-1987", note:"Vicenza, Juventus, Milan"},
+      {name:"Mario Kempes", flag:"🇦🇷", country:"Argentina", pos:"FWD", era:"1970s-1990s", years:"1970-1996", note:"Rosario Central, Valencia"},
+      {name:"Daniel Passarella", flag:"🇦🇷", country:"Argentina", pos:"DEF", era:"1970s-1980s", years:"1971-1989", note:"River Plate, Fiorentina, Inter"},
+      {name:"Teofilo Cubillas", flag:"🇵🇪", country:"Peru", pos:"MID", era:"1960s-1980s", years:"1966-1989", note:"Alianza Lima, Porto, Fort Lauderdale Strikers"},
+      {name:"Franco Baresi", flag:"🇮🇹", country:"Italy", pos:"DEF", era:"1970s-1990s", years:"1977-1997", note:"Milan"},
+      {name:"Roberto Baggio", flag:"🇮🇹", country:"Italy", pos:"FWD", era:"1980s-2000s", years:"1982-2004", note:"Fiorentina, Juventus, Milan, Bologna, Inter, Brescia"},
+      {name:"Gianluigi Buffon", flag:"🇮🇹", country:"Italy", pos:"GK", era:"1990s-2020s", years:"1995-2023", note:"Parma, Juventus, PSG"},
+      {name:"Andrea Pirlo", flag:"🇮🇹", country:"Italy", pos:"MID", era:"1990s-2010s", years:"1995-2017", note:"Inter, Milan, Juventus, New York City"},
+      {name:"Fabio Cannavaro", flag:"🇮🇹", country:"Italy", pos:"DEF", era:"1990s-2010s", years:"1992-2011", note:"Napoli, Parma, Inter, Juventus, Real Madrid"},
+      {name:"Alessandro Del Piero", flag:"🇮🇹", country:"Italy", pos:"FWD", era:"1990s-2010s", years:"1991-2014", note:"Padova, Juventus, Sydney FC, Delhi Dynamos"},
+      {name:"Francesco Totti", flag:"🇮🇹", country:"Italy", pos:"MID", era:"1990s-2010s", years:"1992-2017", note:"Roma"},
+      {name:"Marco van Basten", flag:"🇳🇱", country:"Netherlands", pos:"FWD", era:"1980s-1990s", years:"1981-1995", note:"Ajax, Milan"},
+      {name:"Ruud Gullit", flag:"🇳🇱", country:"Netherlands", pos:"MID", era:"1970s-1990s", years:"1979-1998", note:"Feyenoord, PSV, Milan, Chelsea"},
+      {name:"Frank Rijkaard", flag:"🇳🇱", country:"Netherlands", pos:"MID", era:"1980s-1990s", years:"1980-1995", note:"Ajax, Sporting CP, Zaragoza, Milan"},
+      {name:"Dennis Bergkamp", flag:"🇳🇱", country:"Netherlands", pos:"FWD", era:"1980s-2000s", years:"1986-2006", note:"Ajax, Inter, Arsenal"},
+      {name:"Arjen Robben", flag:"🇳🇱", country:"Netherlands", pos:"FWD", era:"2000s-2020s", years:"2000-2021", note:"Groningen, PSV, Chelsea, Real Madrid, Bayern Munich"},
+      {name:"Wesley Sneijder", flag:"🇳🇱", country:"Netherlands", pos:"MID", era:"2000s-2010s", years:"2002-2019", note:"Ajax, Real Madrid, Inter, Galatasaray"},
+      {name:"Virgil van Dijk", flag:"🇳🇱", country:"Netherlands", pos:"DEF", era:"2010s-2020s", years:"2011-", note:"Groningen, Celtic, Southampton, Liverpool"},
+      {name:"Lothar Matthaus", flag:"🇩🇪", country:"Germany", pos:"MID", era:"1970s-2000s", years:"1979-2000", note:"Borussia Monchengladbach, Bayern Munich, Inter"},
+      {name:"Oliver Kahn", flag:"🇩🇪", country:"Germany", pos:"GK", era:"1980s-2000s", years:"1987-2008", note:"Karlsruher SC, Bayern Munich"},
+      {name:"Miroslav Klose", flag:"🇩🇪", country:"Germany", pos:"FWD", era:"1990s-2010s", years:"1998-2016", note:"Kaiserslautern, Werder Bremen, Bayern Munich, Lazio"},
+      {name:"Manuel Neuer", flag:"🇩🇪", country:"Germany", pos:"GK", era:"2000s-2020s", years:"2005-", note:"Schalke, Bayern Munich"},
+      {name:"Philipp Lahm", flag:"🇩🇪", country:"Germany", pos:"DEF", era:"2000s-2010s", years:"2002-2017", note:"Bayern Munich, Stuttgart"},
+      {name:"Toni Kroos", flag:"🇩🇪", country:"Germany", pos:"MID", era:"2000s-2020s", years:"2007-2024", note:"Bayern Munich, Leverkusen, Real Madrid"},
+      {name:"Bastian Schweinsteiger", flag:"🇩🇪", country:"Germany", pos:"MID", era:"2000s-2010s", years:"2002-2019", note:"Bayern Munich, Man United, Chicago Fire"},
+      {name:"Mesut Ozil", flag:"🇩🇪", country:"Germany", pos:"MID", era:"2000s-2020s", years:"2006-2023", note:"Schalke, Bremen, Real Madrid, Arsenal"},
+      {name:"Thomas Muller", flag:"🇩🇪", country:"Germany", pos:"FWD", era:"2000s-2020s", years:"2008-", note:"Bayern Munich"},
+      {name:"Luis Figo", flag:"🇵🇹", country:"Portugal", pos:"MID", era:"1980s-2000s", years:"1989-2009", note:"Sporting CP, Barcelona, Real Madrid, Inter"},
+      {name:"Rui Costa", flag:"🇵🇹", country:"Portugal", pos:"MID", era:"1990s-2000s", years:"1990-2008", note:"Benfica, Fiorentina, Milan"},
+      {name:"Deco", flag:"🇵🇹", country:"Portugal", pos:"MID", era:"1990s-2010s", years:"1996-2013", note:"Porto, Barcelona, Chelsea, Fluminense"},
+      {name:"Iker Casillas", flag:"🇪🇸", country:"Spain", pos:"GK", era:"1990s-2020s", years:"1999-2020", note:"Real Madrid, Porto"},
+      {name:"Andres Iniesta", flag:"🇪🇸", country:"Spain", pos:"MID", era:"2000s-2020s", years:"2002-2024", note:"Barcelona, Vissel Kobe, Emirates"},
+      {name:"Sergio Ramos", flag:"🇪🇸", country:"Spain", pos:"DEF", era:"2000s-2020s", years:"2004-", note:"Sevilla, Real Madrid, PSG"},
+      {name:"Carles Puyol", flag:"🇪🇸", country:"Spain", pos:"DEF", era:"1990s-2010s", years:"1999-2014", note:"Barcelona"},
+      {name:"Raul", flag:"🇪🇸", country:"Spain", pos:"FWD", era:"1990s-2010s", years:"1994-2015", note:"Real Madrid, Schalke, Al Sadd, New York Cosmos"},
+      {name:"David Villa", flag:"🇪🇸", country:"Spain", pos:"FWD", era:"2000s-2020s", years:"2000-2020", note:"Valencia, Barcelona, Atletico Madrid, New York City, Vissel Kobe"},
+      {name:"Fernando Torres", flag:"🇪🇸", country:"Spain", pos:"FWD", era:"2000s-2010s", years:"2001-2019", note:"Atletico Madrid, Liverpool, Chelsea, Milan, Sagan Tosu"},
+      {name:"David Beckham", flag:"🇬🇧", country:"England", pos:"MID", era:"1990s-2010s", years:"1992-2013", note:"Manchester United, Real Madrid, LA Galaxy, Milan, PSG"},
+      {name:"Wayne Rooney", flag:"🇬🇧", country:"England", pos:"FWD", era:"2000s-2020s", years:"2002-2021", note:"Everton, Manchester United, DC United, Derby County"},
+      {name:"Steven Gerrard", flag:"🇬🇧", country:"England", pos:"MID", era:"1990s-2010s", years:"1998-2016", note:"Liverpool, LA Galaxy"},
+      {name:"Frank Lampard", flag:"🇬🇧", country:"England", pos:"MID", era:"1990s-2010s", years:"1995-2016", note:"West Ham, Chelsea, Manchester City, New York City"},
+      {name:"Paul Scholes", flag:"🇬🇧", country:"England", pos:"MID", era:"1990s-2010s", years:"1993-2013", note:"Manchester United"},
+      {name:"Alan Shearer", flag:"🇬🇧", country:"England", pos:"FWD", era:"1980s-2000s", years:"1988-2006", note:"Southampton, Blackburn, Newcastle"},
+      {name:"Michael Owen", flag:"🇬🇧", country:"England", pos:"FWD", era:"1990s-2010s", years:"1996-2013", note:"Liverpool, Real Madrid, Newcastle, Manchester United, Stoke"},
+      {name:"Harry Kane", flag:"🇬🇧", country:"England", pos:"FWD", era:"2010s-2020s", years:"2011-", note:"Tottenham, Bayern Munich"},
+      {name:"Jude Bellingham", flag:"🇬🇧", country:"England", pos:"MID", era:"2020s", years:"2019-", note:"Birmingham City, Dortmund, Real Madrid"},
+      {name:"Peter Schmeichel", flag:"🇩🇰", country:"Denmark", pos:"GK", era:"1980s-2000s", years:"1981-2003", note:"Brondby, Manchester United, Sporting CP, Aston Villa, Manchester City"},
+      {name:"Michael Laudrup", flag:"🇩🇰", country:"Denmark", pos:"MID", era:"1980s-1990s", years:"1981-1998", note:"Lazio, Juventus, Barcelona, Real Madrid, Ajax"},
+      {name:"Zlatan Ibrahimovic", flag:"🇸🇪", country:"Sweden", pos:"FWD", era:"1990s-2020s", years:"1999-2023", note:"Malmo, Ajax, Juventus, Inter, Barcelona, Milan, PSG, Man United, LA Galaxy"},
+      {name:"Henrik Larsson", flag:"🇸🇪", country:"Sweden", pos:"FWD", era:"1980s-2000s", years:"1989-2009", note:"Helsingborg, Feyenoord, Celtic, Barcelona, Man United"},
+      {name:"Robert Lewandowski", flag:"🇵🇱", country:"Poland", pos:"FWD", era:"2000s-2020s", years:"2006-", note:"Lech Poznan, Dortmund, Bayern Munich, Barcelona"},
+      {name:"Luka Modric", flag:"🇭🇷", country:"Croatia", pos:"MID", era:"2000s-2020s", years:"2003-", note:"Dinamo Zagreb, Tottenham, Real Madrid"},
+      {name:"Davor Suker", flag:"🇭🇷", country:"Croatia", pos:"FWD", era:"1980s-2000s", years:"1985-2003", note:"Dinamo Zagreb, Sevilla, Real Madrid, Arsenal"},
+      {name:"Hristo Stoichkov", flag:"🇧🇬", country:"Bulgaria", pos:"FWD", era:"1980s-2000s", years:"1982-2003", note:"CSKA Sofia, Barcelona, Parma, Chicago Fire"},
+      {name:"Gheorghe Hagi", flag:"🇷🇴", country:"Romania", pos:"MID", era:"1980s-2000s", years:"1982-2001", note:"Steaua Bucharest, Real Madrid, Barcelona, Galatasaray"},
+      {name:"Pavel Nedved", flag:"🇨🇿", country:"Czech Republic", pos:"MID", era:"1990s-2000s", years:"1991-2009", note:"Sparta Prague, Lazio, Juventus"},
+      {name:"Petr Cech", flag:"🇨🇿", country:"Czech Republic", pos:"GK", era:"1990s-2010s", years:"1999-2019", note:"Sparta Prague, Rennes, Chelsea, Arsenal"},
+      {name:"Andriy Shevchenko", flag:"🇺🇦", country:"Ukraine", pos:"FWD", era:"1990s-2010s", years:"1994-2012", note:"Dynamo Kyiv, Milan, Chelsea"},
+      {name:"Gareth Bale", flag:"🇬🇧", country:"Wales", pos:"FWD", era:"2000s-2020s", years:"2006-2023", note:"Southampton, Tottenham, Real Madrid, LAFC"},
+      {name:"Roy Keane", flag:"🇮🇪", country:"Ireland", pos:"MID", era:"1980s-2000s", years:"1989-2006", note:"Nottingham Forest, Manchester United, Celtic"},
+      {name:"Jan Oblak", flag:"🇸🇮", country:"Slovenia", pos:"GK", era:"2010s-2020s", years:"2009-", note:"Olimpija Ljubljana, Benfica, Atletico Madrid"},
+      {name:"Thierry Henry", flag:"🇫🇷", country:"France", pos:"FWD", era:"1990s-2010s", years:"1994-2014", note:"Monaco, Juventus, Arsenal, Barcelona, New York Red Bulls"},
+      {name:"Karim Benzema", flag:"🇫🇷", country:"France", pos:"FWD", era:"2000s-2020s", years:"2004-", note:"Lyon, Real Madrid, Al Ittihad"},
+      {name:"Kylian Mbappe", flag:"🇫🇷", country:"France", pos:"FWD", era:"2010s-2020s", years:"2015-", note:"Monaco, PSG, Real Madrid"},
+      {name:"Antoine Griezmann", flag:"🇫🇷", country:"France", pos:"FWD", era:"2000s-2020s", years:"2009-", note:"Real Sociedad, Atletico Madrid, Barcelona"},
+      {name:"Patrick Vieira", flag:"🇫🇷", country:"France", pos:"MID", era:"1990s-2010s", years:"1993-2011", note:"Cannes, Milan, Arsenal, Juventus, Inter, Manchester City"},
+      {name:"N'Golo Kante", flag:"🇫🇷", country:"France", pos:"MID", era:"2010s-2020s", years:"2012-", note:"Caen, Leicester City, Chelsea, Al Ittihad"},
+      {name:"Lilian Thuram", flag:"🇫🇷", country:"France", pos:"DEF", era:"1990s-2000s", years:"1991-2008", note:"Monaco, Parma, Juventus, Barcelona"},
+      {name:"Marcel Desailly", flag:"🇫🇷", country:"France", pos:"DEF", era:"1980s-2000s", years:"1986-2006", note:"Nantes, Marseille, Milan, Chelsea"},
+      {name:"Claude Makelele", flag:"🇫🇷", country:"France", pos:"MID", era:"1990s-2010s", years:"1992-2011", note:"Nantes, Marseille, Celta, Real Madrid, Chelsea, PSG"},
+      {name:"Eric Cantona", flag:"🇫🇷", country:"France", pos:"FWD", era:"1980s-1990s", years:"1983-1997", note:"Auxerre, Marseille, Leeds, Manchester United"},
+      {name:"Ronaldinho", flag:"🇧🇷", country:"Brazil", pos:"MID", era:"1990s-2010s", years:"1998-2015", note:"Gremio, PSG, Barcelona, Milan, Flamengo, Atletico Mineiro"},
+      {name:"Romario", flag:"🇧🇷", country:"Brazil", pos:"FWD", era:"1980s-2000s", years:"1985-2009", note:"Vasco da Gama, PSV, Barcelona, Flamengo"},
+      {name:"Rivaldo", flag:"🇧🇷", country:"Brazil", pos:"MID", era:"1990s-2010s", years:"1991-2015", note:"Palmeiras, Deportivo, Barcelona, Milan, Olympiacos"},
+      {name:"Kaka", flag:"🇧🇷", country:"Brazil", pos:"MID", era:"2000s-2010s", years:"2001-2017", note:"Sao Paulo, Milan, Real Madrid, Orlando City"},
+      {name:"Neymar", flag:"🇧🇷", country:"Brazil", pos:"FWD", era:"2000s-2020s", years:"2009-", note:"Santos, Barcelona, PSG, Al Hilal, Santos"},
+      {name:"Dani Alves", flag:"🇧🇷", country:"Brazil", pos:"DEF", era:"2000s-2020s", years:"2001-2023", note:"Bahia, Sevilla, Barcelona, Juventus, PSG, Sao Paulo, UNAM"},
+      {name:"Marcelo", flag:"🇧🇷", country:"Brazil", pos:"DEF", era:"2000s-2020s", years:"2005-", note:"Fluminense, Real Madrid, Olympiacos"},
+      {name:"Thiago Silva", flag:"🇧🇷", country:"Brazil", pos:"DEF", era:"2000s-2020s", years:"2002-", note:"Fluminense, Milan, PSG, Chelsea"},
+      {name:"Gabriel Batistuta", flag:"🇦🇷", country:"Argentina", pos:"FWD", era:"1980s-2000s", years:"1988-2005", note:"Newell's, River Plate, Boca Juniors, Fiorentina, Roma, Inter"},
+      {name:"Juan Roman Riquelme", flag:"🇦🇷", country:"Argentina", pos:"MID", era:"1990s-2010s", years:"1996-2015", note:"Boca Juniors, Barcelona, Villarreal"},
+      {name:"Javier Zanetti", flag:"🇦🇷", country:"Argentina", pos:"DEF", era:"1990s-2010s", years:"1992-2014", note:"Talleres, Banfield, Inter"},
+      {name:"Sergio Aguero", flag:"🇦🇷", country:"Argentina", pos:"FWD", era:"2000s-2020s", years:"2003-2021", note:"Independiente, Atletico Madrid, Manchester City, Barcelona"},
+      {name:"Angel Di Maria", flag:"🇦🇷", country:"Argentina", pos:"FWD", era:"2000s-2020s", years:"2005-", note:"Rosario Central, Benfica, Real Madrid, Man United, PSG, Juventus, Benfica"},
+      {name:"Luis Suarez", flag:"🇺🇾", country:"Uruguay", pos:"FWD", era:"2000s-2020s", years:"2005-", note:"Nacional, Groningen, Ajax, Liverpool, Barcelona, Atletico Madrid, Inter Miami"},
+      {name:"Edinson Cavani", flag:"🇺🇾", country:"Uruguay", pos:"FWD", era:"2000s-2020s", years:"2005-", note:"Danubio, Palermo, Napoli, PSG, Man United, Valencia, Boca Juniors"},
+      {name:"Diego Forlan", flag:"🇺🇾", country:"Uruguay", pos:"FWD", era:"1990s-2010s", years:"1997-2019", note:"Independiente, Man United, Villarreal, Atletico Madrid, Inter"},
+      {name:"Enzo Francescoli", flag:"🇺🇾", country:"Uruguay", pos:"MID", era:"1980s-1990s", years:"1980-1997", note:"Montevideo Wanderers, River Plate, Marseille"},
+      {name:"Carlos Valderrama", flag:"🇨🇴", country:"Colombia", pos:"MID", era:"1980s-2000s", years:"1981-2002", note:"Deportivo Cali, Montpellier, Valladolid, MLS"},
+      {name:"James Rodriguez", flag:"🇨🇴", country:"Colombia", pos:"MID", era:"2000s-2020s", years:"2006-", note:"Envigado, Porto, Monaco, Real Madrid, Bayern Munich, Everton, Sao Paulo, Rayo Vallecano"},
+      {name:"Radamel Falcao", flag:"🇨🇴", country:"Colombia", pos:"FWD", era:"2000s-2020s", years:"2005-", note:"River Plate, Porto, Atletico Madrid, Monaco, Man United, Chelsea, Galatasaray, Rayo Vallecano"},
+      {name:"Alexis Sanchez", flag:"🇨🇱", country:"Chile", pos:"FWD", era:"2000s-2020s", years:"2005-", note:"Cobreloa, Udinese, Barcelona, Arsenal, Man United, Inter, Marseille, Udinese"},
+      {name:"Arturo Vidal", flag:"🇨🇱", country:"Chile", pos:"MID", era:"2000s-2020s", years:"2005-", note:"Colo-Colo, Leverkusen, Juventus, Bayern Munich, Barcelona, Inter, Flamengo, Athletico Paranaense"},
+      {name:"Ivan Zamorano", flag:"🇨🇱", country:"Chile", pos:"FWD", era:"1980s-2000s", years:"1983-2003", note:"Cobresal, Sevilla, Real Madrid, Inter, America"},
+      {name:"Hugo Sanchez", flag:"🇲🇽", country:"Mexico", pos:"FWD", era:"1970s-1990s", years:"1976-1997", note:"UNAM, Atletico Madrid, Real Madrid"},
+      {name:"Rafael Marquez", flag:"🇲🇽", country:"Mexico", pos:"DEF", era:"1990s-2010s", years:"1996-2018", note:"Atlas, Monaco, Barcelona, New York Red Bulls, Leon, Verona"},
+      {name:"Landon Donovan", flag:"🇺🇸", country:"United States", pos:"FWD", era:"1990s-2010s", years:"1999-2018", note:"Leverkusen, San Jose Earthquakes, LA Galaxy, Bayern Munich, Everton, Leon"},
+      {name:"Clint Dempsey", flag:"🇺🇸", country:"United States", pos:"FWD", era:"2000s-2010s", years:"2004-2018", note:"New England Revolution, Fulham, Tottenham, Seattle Sounders"},
+      {name:"Christian Pulisic", flag:"🇺🇸", country:"United States", pos:"FWD", era:"2010s-2020s", years:"2016-", note:"Dortmund, Chelsea, Milan"},
+      {name:"Alphonso Davies", flag:"🇨🇦", country:"Canada", pos:"DEF", era:"2010s-2020s", years:"2016-", note:"Vancouver Whitecaps, Bayern Munich"},
+      {name:"George Weah", flag:"🇱🇷", country:"Liberia", pos:"FWD", era:"1980s-2000s", years:"1985-2003", note:"Monaco, PSG, Milan, Chelsea, Manchester City, Marseille"},
+      {name:"Samuel Eto'o", flag:"🇨🇲", country:"Cameroon", pos:"FWD", era:"1990s-2010s", years:"1997-2019", note:"Real Madrid, Mallorca, Barcelona, Inter, Chelsea, Everton, Sampdoria"},
+      {name:"Roger Milla", flag:"🇨🇲", country:"Cameroon", pos:"FWD", era:"1970s-1990s", years:"1974-1996", note:"Tonnerre Yaounde, Monaco, Bastia, Saint-Etienne, Montpellier"},
+      {name:"Didier Drogba", flag:"🇨🇮", country:"Cote d'Ivoire", pos:"FWD", era:"1990s-2010s", years:"1998-2018", note:"Le Mans, Guingamp, Marseille, Chelsea, Galatasaray, Montreal Impact, Phoenix Rising"},
+      {name:"Yaya Toure", flag:"🇨🇮", country:"Cote d'Ivoire", pos:"MID", era:"2000s-2020s", years:"2001-2020", note:"Beveren, Metalurh Donetsk, Olympiacos, Monaco, Barcelona, Manchester City"},
+      {name:"Mohamed Salah", flag:"🇪🇬", country:"Egypt", pos:"FWD", era:"2010s-2020s", years:"2010-", note:"Al Mokawloon, Basel, Chelsea, Fiorentina, Roma, Liverpool"},
+      {name:"Sadio Mane", flag:"🇸🇳", country:"Senegal", pos:"FWD", era:"2010s-2020s", years:"2012-", note:"Metz, Salzburg, Southampton, Liverpool, Bayern Munich, Al Nassr"},
+      {name:"Abedi Pele", flag:"🇬🇭", country:"Ghana", pos:"MID", era:"1980s-2000s", years:"1978-2000", note:"Real Tamale United, Marseille, Lyon, Torino, 1860 Munich"},
+      {name:"Jay-Jay Okocha", flag:"🇳🇬", country:"Nigeria", pos:"MID", era:"1990s-2000s", years:"1990-2008", note:"Frankfurt, Fenerbahce, PSG, Bolton, Qatar SC, Hull City"},
+      {name:"Nwankwo Kanu", flag:"🇳🇬", country:"Nigeria", pos:"FWD", era:"1990s-2010s", years:"1992-2012", note:"Ajax, Inter, Arsenal, West Brom, Portsmouth"},
+      {name:"Michael Essien", flag:"🇬🇭", country:"Ghana", pos:"MID", era:"2000s-2010s", years:"2000-2020", note:"Bastia, Lyon, Chelsea, Real Madrid, Milan, Panathinaikos"},
+      {name:"Son Heung-min", flag:"🇰🇷", country:"South Korea", pos:"FWD", era:"2010s-2020s", years:"2010-", note:"Hamburg, Leverkusen, Tottenham"},
+      {name:"Park Ji-sung", flag:"🇰🇷", country:"South Korea", pos:"MID", era:"2000s-2010s", years:"2000-2014", note:"Kyoto Purple Sanga, PSV, Manchester United, QPR"},
+      {name:"Hidetoshi Nakata", flag:"🇯🇵", country:"Japan", pos:"MID", era:"1990s-2000s", years:"1995-2006", note:"Bellmare Hiratsuka, Perugia, Roma, Parma, Fiorentina, Bolton"},
+      {name:"Ali Daei", flag:"🇮🇷", country:"Iran", pos:"FWD", era:"1980s-2000s", years:"1988-2007", note:"Persepolis, Arminia Bielefeld, Bayern Munich, Hertha Berlin"},
+      {name:"Tim Cahill", flag:"🇦🇺", country:"Australia", pos:"MID", era:"1990s-2010s", years:"1997-2019", note:"Millwall, Everton, New York Red Bulls, Shanghai Shenhua, Hangzhou Greentown, Melbourne City"},
+      {name:"Kevin De Bruyne", flag:"🇧🇪", country:"Belgium", pos:"MID", era:"2000s-2020s", years:"2008-", note:"Genk, Chelsea, Werder Bremen, Wolfsburg, Manchester City"},
+      {name:"Eden Hazard", flag:"🇧🇪", country:"Belgium", pos:"FWD", era:"2000s-2020s", years:"2007-2023", note:"Lille, Chelsea, Real Madrid"},
+      {name:"Thibaut Courtois", flag:"🇧🇪", country:"Belgium", pos:"GK", era:"2000s-2020s", years:"2009-", note:"Genk, Chelsea, Atletico Madrid, Real Madrid"},
+      {name:"Erling Haaland", flag:"🇳🇴", country:"Norway", pos:"FWD", era:"2010s-2020s", years:"2016-", note:"Bryne, Molde, Salzburg, Dortmund, Manchester City"},
+      {name:"Jamal Musiala", flag:"🇩🇪", country:"Germany", pos:"MID", era:"2020s", years:"2020-", note:"Bayern Munich"},
+      {name:"Vinicius Junior", flag:"🇧🇷", country:"Brazil", pos:"FWD", era:"2010s-2020s", years:"2017-", note:"Flamengo, Real Madrid"},
+      {name:"Rodri", flag:"🇪🇸", country:"Spain", pos:"MID", era:"2010s-2020s", years:"2015-", note:"Villarreal, Atletico Madrid, Manchester City"}
+    ];
+
+    const localNames = {
+      "Pele": {cn: "贝利", nick: "球王 / 黑珍珠"},
+      "Diego Maradona": {cn: "迭戈·马拉多纳", nick: "球王 / 上帝之手"},
+      "Lionel Messi": {cn: "利昂内尔·梅西", nick: "梅球王 / 小跳蚤"},
+      "Cristiano Ronaldo": {cn: "克里斯蒂亚诺·罗纳尔多", nick: "C罗 / 总裁 / CR7"},
+      "Johan Cruyff": {cn: "约翰·克鲁伊夫", nick: "飞翔的荷兰人"},
+      "Franz Beckenbauer": {cn: "弗朗茨·贝肯鲍尔", nick: "足球皇帝"},
+      "Zinedine Zidane": {cn: "齐内丁·齐达内", nick: "齐祖"},
+      "Ronaldo Nazario": {cn: "罗纳尔多·纳扎里奥", nick: "大罗 / 外星人"},
+      "Alfredo Di Stefano": {cn: "阿尔弗雷多·迪斯蒂法诺", nick: "金箭头"},
+      "Michel Platini": {cn: "米歇尔·普拉蒂尼", nick: ""},
+      "Lev Yashin": {cn: "列夫·雅辛", nick: "黑蜘蛛 / 黑豹"},
+      "Cafu": {cn: "卡福", nick: ""},
+      "Paolo Maldini": {cn: "保罗·马尔蒂尼", nick: "马队"},
+      "Roberto Carlos": {cn: "罗伯托·卡洛斯", nick: ""},
+      "Xavi": {cn: "哈维", nick: ""},
+      "Ferenc Puskas": {cn: "费伦茨·普斯卡什", nick: "飞奔的少校"},
+      "Garrincha": {cn: "加林查", nick: "小鸟"},
+      "Eusebio": {cn: "尤西比奥", nick: "黑豹"},
+      "George Best": {cn: "乔治·贝斯特", nick: "第五披头士"},
+      "Gerd Muller": {cn: "盖德·穆勒", nick: "轰炸机"},
+      "Bobby Charlton": {cn: "博比·查尔顿", nick: ""},
+      "Gordon Banks": {cn: "戈登·班克斯", nick: ""},
+      "Dino Zoff": {cn: "迪诺·佐夫", nick: ""},
+      "Bobby Moore": {cn: "博比·摩尔", nick: ""},
+      "Carlos Alberto": {cn: "卡洛斯·阿尔贝托", nick: ""},
+      "Nilton Santos": {cn: "尼尔顿·桑托斯", nick: "足球百科全书"},
+      "Didi": {cn: "迪迪", nick: ""},
+      "Raymond Kopa": {cn: "雷蒙·科帕", nick: ""},
+      "Just Fontaine": {cn: "朱斯特·方丹", nick: ""},
+      "Giacinto Facchetti": {cn: "贾琴托·法切蒂", nick: ""},
+      "Jairzinho": {cn: "雅伊尔津尼奥", nick: ""},
+      "Rivelino": {cn: "里维利诺", nick: ""},
+      "Zico": {cn: "济科", nick: "白贝利"},
+      "Socrates": {cn: "苏格拉底", nick: "足球博士"},
+      "Kenny Dalglish": {cn: "肯尼·达格利什", nick: "国王肯尼"},
+      "Kevin Keegan": {cn: "凯文·基冈", nick: ""},
+      "Paolo Rossi": {cn: "保罗·罗西", nick: "金童"},
+      "Mario Kempes": {cn: "马里奥·肯佩斯", nick: ""},
+      "Daniel Passarella": {cn: "丹尼尔·帕萨雷拉", nick: ""},
+      "Teofilo Cubillas": {cn: "特奥菲洛·库比拉斯", nick: ""},
+      "Franco Baresi": {cn: "弗朗哥·巴雷西", nick: ""},
+      "Roberto Baggio": {cn: "罗伯托·巴乔", nick: "忧郁王子"},
+      "Gianluigi Buffon": {cn: "吉安路易吉·布冯", nick: "小将"},
+      "Andrea Pirlo": {cn: "安德烈亚·皮尔洛", nick: "睡皮"},
+      "Fabio Cannavaro": {cn: "法比奥·卡纳瓦罗", nick: ""},
+      "Alessandro Del Piero": {cn: "亚历山德罗·德尔·皮耶罗", nick: "斑马王子"},
+      "Francesco Totti": {cn: "弗朗切斯科·托蒂", nick: "罗马王子"},
+      "Marco van Basten": {cn: "马尔科·范巴斯滕", nick: "芭蕾王子"},
+      "Ruud Gullit": {cn: "路德·古利特", nick: "辫帅"},
+      "Frank Rijkaard": {cn: "弗兰克·里杰卡尔德", nick: ""},
+      "Dennis Bergkamp": {cn: "丹尼斯·博格坎普", nick: "冰王子"},
+      "Arjen Robben": {cn: "阿尔扬·罗本", nick: "小飞侠"},
+      "Wesley Sneijder": {cn: "韦斯利·斯内德", nick: ""},
+      "Virgil van Dijk": {cn: "维吉尔·范戴克", nick: ""},
+      "Lothar Matthaus": {cn: "洛塔尔·马特乌斯", nick: ""},
+      "Oliver Kahn": {cn: "奥利弗·卡恩", nick: "狮王"},
+      "Miroslav Klose": {cn: "米罗斯拉夫·克洛泽", nick: ""},
+      "Manuel Neuer": {cn: "曼努埃尔·诺伊尔", nick: "小新"},
+      "Philipp Lahm": {cn: "菲利普·拉姆", nick: ""},
+      "Toni Kroos": {cn: "托尼·克罗斯", nick: ""},
+      "Bastian Schweinsteiger": {cn: "巴斯蒂安·施魏因施泰格", nick: "小猪"},
+      "Mesut Ozil": {cn: "梅苏特·厄齐尔", nick: ""},
+      "Thomas Muller": {cn: "托马斯·穆勒", nick: "二娃"},
+      "Luis Figo": {cn: "路易斯·菲戈", nick: ""},
+      "Rui Costa": {cn: "鲁伊·科斯塔", nick: ""},
+      "Deco": {cn: "德科", nick: ""},
+      "Iker Casillas": {cn: "伊克尔·卡西利亚斯", nick: "圣卡西"},
+      "Andres Iniesta": {cn: "安德烈斯·伊涅斯塔", nick: "小白"},
+      "Sergio Ramos": {cn: "塞尔吉奥·拉莫斯", nick: "水爷"},
+      "Carles Puyol": {cn: "卡莱斯·普约尔", nick: "普队"},
+      "Raul": {cn: "劳尔", nick: "指环王"},
+      "David Villa": {cn: "大卫·比利亚", nick: "葫芦娃"},
+      "Fernando Torres": {cn: "费尔南多·托雷斯", nick: "圣婴"},
+      "David Beckham": {cn: "大卫·贝克汉姆", nick: "小贝"},
+      "Wayne Rooney": {cn: "韦恩·鲁尼", nick: "鲁小胖"},
+      "Steven Gerrard": {cn: "史蒂文·杰拉德", nick: "杰队"},
+      "Frank Lampard": {cn: "弗兰克·兰帕德", nick: "神灯"},
+      "Paul Scholes": {cn: "保罗·斯科尔斯", nick: "生姜头"},
+      "Alan Shearer": {cn: "阿兰·希勒", nick: ""},
+      "Michael Owen": {cn: "迈克尔·欧文", nick: "追风少年"},
+      "Harry Kane": {cn: "哈里·凯恩", nick: ""},
+      "Jude Bellingham": {cn: "裘德·贝林厄姆", nick: ""},
+      "Peter Schmeichel": {cn: "彼得·舒梅切尔", nick: ""},
+      "Michael Laudrup": {cn: "迈克尔·劳德鲁普", nick: "大劳德鲁普"},
+      "Zlatan Ibrahimovic": {cn: "兹拉坦·伊布拉希莫维奇", nick: "伊布 / 奉先"},
+      "Henrik Larsson": {cn: "亨里克·拉尔森", nick: ""},
+      "Robert Lewandowski": {cn: "罗伯特·莱万多夫斯基", nick: "莱万"},
+      "Luka Modric": {cn: "卢卡·莫德里奇", nick: "魔笛"},
+      "Davor Suker": {cn: "达沃·苏克", nick: ""},
+      "Hristo Stoichkov": {cn: "赫里斯托·斯托伊奇科夫", nick: "霹雳火"},
+      "Gheorghe Hagi": {cn: "格奥尔基·哈吉", nick: "喀尔巴阡山马拉多纳"},
+      "Pavel Nedved": {cn: "帕维尔·内德维德", nick: "捷克铁人"},
+      "Petr Cech": {cn: "彼得·切赫", nick: ""},
+      "Andriy Shevchenko": {cn: "安德烈·舍甫琴科", nick: "舍瓦"},
+      "Gareth Bale": {cn: "加雷斯·贝尔", nick: "大圣"},
+      "Roy Keane": {cn: "罗伊·基恩", nick: ""},
+      "Jan Oblak": {cn: "扬·奥布拉克", nick: ""},
+      "Thierry Henry": {cn: "蒂埃里·亨利", nick: "海布里之王"},
+      "Karim Benzema": {cn: "卡里姆·本泽马", nick: ""},
+      "Kylian Mbappe": {cn: "基利安·姆巴佩", nick: "忍者神龟"},
+      "Antoine Griezmann": {cn: "安托万·格列兹曼", nick: "格子"},
+      "Patrick Vieira": {cn: "帕特里克·维埃拉", nick: ""},
+      "N'Golo Kante": {cn: "恩戈洛·坎特", nick: ""},
+      "Lilian Thuram": {cn: "利利安·图拉姆", nick: ""},
+      "Marcel Desailly": {cn: "马塞尔·德塞利", nick: ""},
+      "Claude Makelele": {cn: "克洛德·马克莱莱", nick: ""},
+      "Eric Cantona": {cn: "埃里克·坎通纳", nick: "国王"},
+      "Ronaldinho": {cn: "罗纳尔迪尼奥", nick: "小罗 / 足球精灵"},
+      "Romario": {cn: "罗马里奥", nick: "独狼"},
+      "Rivaldo": {cn: "里瓦尔多", nick: ""},
+      "Kaka": {cn: "卡卡", nick: ""},
+      "Neymar": {cn: "内马尔", nick: ""},
+      "Dani Alves": {cn: "丹尼·阿尔维斯", nick: ""},
+      "Marcelo": {cn: "马塞洛", nick: ""},
+      "Thiago Silva": {cn: "蒂亚戈·席尔瓦", nick: ""},
+      "Gabriel Batistuta": {cn: "加布里埃尔·巴蒂斯图塔", nick: "战神"},
+      "Juan Roman Riquelme": {cn: "胡安·罗曼·里克尔梅", nick: ""},
+      "Javier Zanetti": {cn: "哈维尔·萨内蒂", nick: ""},
+      "Sergio Aguero": {cn: "塞尔吉奥·阿圭罗", nick: "KUN"},
+      "Angel Di Maria": {cn: "安赫尔·迪马利亚", nick: "天使"},
+      "Luis Suarez": {cn: "路易斯·苏亚雷斯", nick: "苏牙"},
+      "Edinson Cavani": {cn: "埃丁森·卡瓦尼", nick: ""},
+      "Diego Forlan": {cn: "迭戈·弗兰", nick: ""},
+      "Enzo Francescoli": {cn: "恩佐·弗朗西斯科利", nick: "恩佐王子"},
+      "Carlos Valderrama": {cn: "卡洛斯·巴尔德拉马", nick: "金毛狮王"},
+      "James Rodriguez": {cn: "哈梅斯·罗德里格斯", nick: ""},
+      "Radamel Falcao": {cn: "拉达梅尔·法尔考", nick: "老虎"},
+      "Alexis Sanchez": {cn: "阿莱克西斯·桑切斯", nick: ""},
+      "Arturo Vidal": {cn: "阿图罗·比达尔", nick: ""},
+      "Ivan Zamorano": {cn: "伊万·萨莫拉诺", nick: ""},
+      "Hugo Sanchez": {cn: "乌戈·桑切斯", nick: ""},
+      "Rafael Marquez": {cn: "拉斐尔·马克斯", nick: ""},
+      "Landon Donovan": {cn: "兰登·多诺万", nick: ""},
+      "Clint Dempsey": {cn: "克林特·邓普西", nick: ""},
+      "Christian Pulisic": {cn: "克里斯蒂安·普利西奇", nick: "美国队长"},
+      "Alphonso Davies": {cn: "阿方索·戴维斯", nick: ""},
+      "George Weah": {cn: "乔治·维阿", nick: ""},
+      "Samuel Eto'o": {cn: "萨缪埃尔·埃托奥", nick: "猎豹"},
+      "Roger Milla": {cn: "罗杰·米拉", nick: "米拉大叔"},
+      "Didier Drogba": {cn: "迪迪埃·德罗巴", nick: "魔兽"},
+      "Yaya Toure": {cn: "亚亚·图雷", nick: ""},
+      "Mohamed Salah": {cn: "穆罕默德·萨拉赫", nick: "法老"},
+      "Sadio Mane": {cn: "萨迪奥·马内", nick: ""},
+      "Abedi Pele": {cn: "阿贝迪·贝利", nick: ""},
+      "Jay-Jay Okocha": {cn: "杰伊-杰伊·奥科查", nick: ""},
+      "Nwankwo Kanu": {cn: "恩万科沃·卡努", nick: ""},
+      "Michael Essien": {cn: "迈克尔·埃辛", nick: "水牛"},
+      "Son Heung-min": {cn: "孙兴慜", nick: "亚洲一哥"},
+      "Park Ji-sung": {cn: "朴智星", nick: "三肺朴"},
+      "Hidetoshi Nakata": {cn: "中田英寿", nick: ""},
+      "Ali Daei": {cn: "阿里·代伊", nick: ""},
+      "Tim Cahill": {cn: "蒂姆·卡希尔", nick: ""},
+      "Kevin De Bruyne": {cn: "凯文·德布劳内", nick: "丁丁"},
+      "Eden Hazard": {cn: "埃登·阿扎尔", nick: "扎球王"},
+      "Thibaut Courtois": {cn: "蒂博·库尔图瓦", nick: ""},
+      "Erling Haaland": {cn: "埃尔林·哈兰德", nick: "魔人布欧"},
+      "Jamal Musiala": {cn: "贾马尔·穆西亚拉", nick: ""},
+      "Vinicius Junior": {cn: "维尼修斯·儒尼奥尔", nick: "小熊"},
+      "Rodri": {cn: "罗德里", nick: ""}
+    };
+
+    const controls = {
+      search: document.querySelector("#search"),
+      era: document.querySelector("#era"),
+      position: document.querySelector("#position"),
+      country: document.querySelector("#country"),
+      sort: document.querySelector("#sort")
+    };
+
+    const labels = {
+      GK: "门将",
+      DEF: "后卫",
+      MID: "中场",
+      FWD: "前锋"
+    };
+
+    const xiLimits = {GK: 1, DEF: 4, MID: 3, FWD: 3};
+    const xiRows = [
+      {pos: "FWD", className: "forwards"},
+      {pos: "MID", className: "mids"},
+      {pos: "DEF", className: "defs"},
+      {pos: "GK", className: "gk"}
+    ];
+    const storageKey = "world-football-user-picks-v2";
+
+    let mode = "all";
+
+    function normalized(text) {
+      return String(text).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function makeId(player, index) {
+      return normalized(`${player.name}-${player.country}-${index}`).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    }
+
+    players.forEach((player, index) => {
+      Object.assign(player, localNames[player.name] || {cn: player.name, nick: ""});
+      player.id = makeId(player, index);
+    });
+
+    const playerById = new Map(players.map(player => [player.id, player]));
+    let picks = loadPicks();
+
+    function fillSelect(select, first, values) {
+      select.innerHTML = "";
+      const firstOption = new Option(first.label, first.value);
+      select.append(firstOption);
+      values.forEach(value => select.append(new Option(value, value)));
+    }
+
+    function setupControls() {
+      const eras = [...new Set(players.map(player => player.era))].sort();
+      const countries = [...new Set(players.map(player => player.country))].sort();
+      fillSelect(controls.era, {label:"全部年代", value:""}, eras);
+      fillSelect(controls.position, {label:"全部位置", value:""}, ["GK", "DEF", "MID", "FWD"].map(pos => `${pos} · ${labels[pos]}`));
+      fillSelect(controls.country, {label:"全部国家", value:""}, countries);
+      fillSelect(controls.sort, {label:"按姓名", value:"name"}, ["按国家", "按位置", "按年代", "按最佳排序"]);
+    }
+
+    function loadPicks() {
+      try {
+        return sanitizePicks(JSON.parse(localStorage.getItem(storageKey)) || {});
+      } catch {
+        return sanitizePicks({});
+      }
+    }
+
+    function savePicks() {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(picks));
+      } catch {
+      }
+    }
+
+    function uniqueValidIds(ids, max) {
+      const seen = new Set();
+      return Array.isArray(ids)
+        ? ids.filter(id => playerById.has(id) && !seen.has(id) && seen.add(id)).slice(0, max)
+        : [];
+    }
+
+    function sanitizePicks(raw) {
+      const xiCounts = {GK: 0, DEF: 0, MID: 0, FWD: 0};
+      const xi = [];
+      uniqueValidIds(raw.xi, 11).forEach(id => {
+        const player = playerById.get(id);
+        if (player && xi.length < 11 && xiCounts[player.pos] < xiLimits[player.pos]) {
+          xi.push(id);
+          xiCounts[player.pos] += 1;
+        }
+      });
+      return {xi, top10: uniqueValidIds(raw.top10, 10)};
+    }
+
+    function filteredPlayers() {
+      const query = normalized(controls.search.value.trim());
+      const era = controls.era.value;
+      const country = controls.country.value;
+      const position = controls.position.value.slice(0, 3).trim();
+      const sort = controls.sort.value;
+
+      let list = players.filter(player => {
+        const text = normalized(`${player.name} ${player.cn} ${player.nick} ${player.country} ${player.note} ${player.era}`);
+        const matchQuery = !query || text.includes(query);
+        const matchEra = !era || player.era === era;
+        const matchCountry = !country || player.country === country;
+        const matchPosition = !position || player.pos === position;
+        return matchQuery && matchEra && matchCountry && matchPosition;
+      });
+
+      list = [...list].sort((a, b) => {
+        const selectedDiff = selectedWeight(b) - selectedWeight(a);
+        if (selectedDiff) return selectedDiff;
+        if (sort === "按国家") return a.country.localeCompare(b.country) || a.name.localeCompare(b.name);
+        if (sort === "按位置") return posWeight(a.pos) - posWeight(b.pos) || a.name.localeCompare(b.name);
+        if (sort === "按年代") return a.era.localeCompare(b.era) || a.name.localeCompare(b.name);
+        if (sort === "按最佳排序") return (a.top10 || 80) - (b.top10 || 80) || xiWeight(a) - xiWeight(b) || a.name.localeCompare(b.name);
+        return a.name.localeCompare(b.name);
+      });
+
+      return list;
+    }
+
+    function selectedWeight(player) {
+      if (mode === "xi") return isInXi(player) ? 1 : 0;
+      if (mode === "top10") return topRank(player) ? 1 : 0;
+      return isInXi(player) || topRank(player) ? 1 : 0;
+    }
+
+    function posWeight(pos) {
+      return {GK: 1, DEF: 2, MID: 3, FWD: 4}[pos] || 9;
+    }
+
+    function xiWeight(player) {
+      const formation = {FWD: 1, MID: 2, DEF: 3, GK: 4};
+      return (formation[player.xi] || formation[player.pos] || 9) * 100 + players.indexOf(player);
+    }
+
+    function topRank(player) {
+      const index = picks.top10.indexOf(player.id);
+      return index === -1 ? 0 : index + 1;
+    }
+
+    function isInXi(player) {
+      return picks.xi.includes(player.id);
+    }
+
+    function xiPosCount(pos) {
+      return picks.xi.reduce((total, id) => {
+        const player = playerById.get(id);
+        return total + (player?.pos === pos ? 1 : 0);
+      }, 0);
+    }
+
+    function xiBlockReason(player) {
+      if (isInXi(player)) return "";
+      if (picks.xi.length >= 11) return "阵容已满";
+      if (xiPosCount(player.pos) >= xiLimits[player.pos]) return `${labels[player.pos]}已满`;
+      return "";
+    }
+
+    function playerCard(player) {
+      const inXi = isInXi(player);
+      const rank = topRank(player);
+      const xiReason = xiBlockReason(player);
+      const topFull = !rank && picks.top10.length >= 10;
+      const tags = [
+        `<span class="chip pos-${player.pos}">${labels[player.pos]}</span>`,
+        player.nick ? `<span class="chip tag">${player.nick}</span>` : "",
+        inXi ? `<span class="chip tag">我的阵容</span>` : "",
+        rank ? `<span class="chip tag">我的第${rank}</span>` : ""
+      ].join("");
+
+      return `
+        <article class="player ${inXi || rank ? "selected" : ""}">
+          <div class="player-head">
+            <span class="flag" aria-hidden="true">${player.flag}</span>
+            <div>
+              <b>${player.cn}</b>
+              <div class="meta">${player.name}<br>${player.country} · ${player.era}</div>
+            </div>
+          </div>
+          <div class="meta">${player.years}<br>${player.note}</div>
+          <div class="chips">${tags}</div>
+          <div class="actions">
+            <button type="button" data-action="toggle-xi" data-id="${player.id}" class="${inXi ? "is-picked" : ""}" ${xiReason ? "disabled" : ""}>${inXi ? "移出阵容" : xiReason || "选入阵容"}</button>
+            <button type="button" data-action="toggle-top" data-id="${player.id}" class="${rank ? "is-picked" : ""}" ${topFull ? "disabled" : ""}>${rank ? "移出前十" : topFull ? "前十已满" : "选入前十"}</button>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderPitch() {
+      const selected = picks.xi.map(id => playerById.get(id)).filter(Boolean);
+      const slot = player => `
+        <div class="slot">
+          <b>${player.flag} ${player.cn}</b>
+          <small>${player.name}${player.nick ? ` · ${player.nick}` : ""}<br>${labels[player.pos]} · ${player.country}</small>
+          <button type="button" class="mini" data-action="remove-xi" data-id="${player.id}">移除</button>
+        </div>
+      `;
+      const emptySlot = pos => `
+        <div class="slot empty">
+          <b>空位</b>
+          <small>${labels[pos]}</small>
+        </div>
+      `;
+      const row = ({pos, className}) => {
+        const group = selected.filter(player => player.pos === pos);
+        const empty = Array.from({length: xiLimits[pos] - group.length}, () => emptySlot(pos)).join("");
+        return `<div class="pitch-row ${className}">${group.map(slot).join("")}${empty}</div>`;
+      };
+
+      return `
+        <div class="choice-bar">
+          <span>4-3-3 · ${picks.xi.length}/11</span>
+          <div class="choice-actions">
+            <button type="button" class="mini" data-action="export-xi" ${picks.xi.length ? "" : "disabled"}>导出图片</button>
+            <button type="button" class="mini" data-action="clear-xi" ${picks.xi.length ? "" : "disabled"}>清空阵容</button>
+          </div>
+        </div>
+        <div class="pitch" aria-label="我的历史最佳阵容">
+          ${xiRows.map(row).join("")}
+        </div>
+      `;
+    }
+
+    function renderTop10() {
+      const selected = picks.top10.map(id => playerById.get(id)).filter(Boolean);
+      const rows = Array.from({length: 10}, (_, index) => {
+        const player = selected[index];
+        if (!player) {
+          return `
+            <article class="rank-item empty">
+              <span class="rank-no">${index + 1}</span>
+              <div>空位</div>
+            </article>
+          `;
+        }
+        return `
+          <article class="rank-item">
+            <span class="rank-no">${index + 1}</span>
+            <div>
+              <b>${player.flag} ${player.cn}</b>
+              <div class="meta">${player.name}${player.nick ? ` · ${player.nick}` : ""}<br>${player.country} · ${labels[player.pos]} · ${player.era}</div>
+            </div>
+            <div class="rank-actions">
+              <button type="button" class="mini" data-action="move-top" data-id="${player.id}" data-dir="-1" ${index === 0 ? "disabled" : ""}>↑</button>
+              <button type="button" class="mini" data-action="move-top" data-id="${player.id}" data-dir="1" ${index === selected.length - 1 ? "disabled" : ""}>↓</button>
+              <button type="button" class="mini" data-action="remove-top" data-id="${player.id}">×</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      return `
+        <div class="choice-bar">
+          <span>${picks.top10.length}/10</span>
+          <div class="choice-actions">
+            <button type="button" class="mini" data-action="export-top" ${picks.top10.length ? "" : "disabled"}>导出图片</button>
+            <button type="button" class="mini" data-action="clear-top" ${picks.top10.length ? "" : "disabled"}>清空前十</button>
+          </div>
+        </div>
+        <div class="rank-list" aria-label="我的历史最佳10人">${rows}</div>
+      `;
+    }
+
+    function canvasKit(width, height) {
+      const ratio = 2;
+      const canvas = document.createElement("canvas");
+      canvas.width = width * ratio;
+      canvas.height = height * ratio;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      const ctx = canvas.getContext("2d");
+      ctx.scale(ratio, ratio);
+      ctx.textBaseline = "top";
+      return {canvas, ctx};
+    }
+
+    function roundRect(ctx, x, y, width, height, radius) {
+      const r = Math.min(radius, width / 2, height / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + width, y, x + width, y + height, r);
+      ctx.arcTo(x + width, y + height, x, y + height, r);
+      ctx.arcTo(x, y + height, x, y, r);
+      ctx.arcTo(x, y, x + width, y, r);
+      ctx.closePath();
+    }
+
+    function drawText(ctx, text, x, y, size, color = "#1e2522", weight = "700", align = "left") {
+      ctx.fillStyle = color;
+      ctx.font = `${weight} ${size}px ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+      ctx.textAlign = align;
+      ctx.fillText(text, x, y);
+    }
+
+    function drawPlayerTile(ctx, player, x, y, width, height, rank = "") {
+      roundRect(ctx, x, y, width, height, 14);
+      ctx.fillStyle = "rgba(255,255,255,.92)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(23,56,50,.18)";
+      ctx.stroke();
+      if (rank) {
+        ctx.fillStyle = "#f3d39f";
+        ctx.beginPath();
+        ctx.arc(x + 34, y + 34, 20, 0, Math.PI * 2);
+        ctx.fill();
+        drawText(ctx, rank, x + 34, y + 23, 16, "#5c3511", "850", "center");
+      }
+      const nameX = x + (rank ? 66 : 18);
+      drawText(ctx, `${player.flag} ${player.cn}`, nameX, y + 16, 22, "#1e2522", "850");
+      drawText(ctx, player.name, nameX, y + 45, 15, "#66706b", "650");
+      if (player.nick) drawText(ctx, player.nick, nameX, y + 68, 14, "#1f6f55", "750");
+    }
+
+    function downloadCanvas(canvas, filename) {
+      const link = document.createElement("a");
+      link.download = filename;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }
+
+    function exportXiImage() {
+      const selected = picks.xi.map(id => playerById.get(id)).filter(Boolean);
+      if (!selected.length) return;
+      const {canvas, ctx} = canvasKit(1200, 1000);
+      ctx.fillStyle = "#f4f6f2";
+      ctx.fillRect(0, 0, 1200, 1000);
+      drawText(ctx, "我的世界足坛历史最佳阵容", 600, 44, 40, "#173832", "900", "center");
+      drawText(ctx, `制作者：锅巴32595 · ${selected.length}/11`, 600, 96, 18, "#66706b", "650", "center");
+
+      roundRect(ctx, 70, 145, 1060, 760, 20);
+      ctx.fillStyle = "#1f6f55";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,.7)";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.strokeStyle = "rgba(255,255,255,.28)";
+      ctx.lineWidth = 1;
+      for (let i = 1; i < 12; i += 1) {
+        ctx.beginPath();
+        ctx.moveTo(70 + i * 88, 145);
+        ctx.lineTo(70 + i * 88, 905);
+        ctx.stroke();
+      }
+
+      const rowY = {FWD: 240, MID: 430, DEF: 620, GK: 790};
+      xiRows.forEach(({pos}) => {
+        const group = selected.filter(player => player.pos === pos);
+        const count = xiLimits[pos];
+        const gap = 26;
+        const tileW = pos === "GK" ? 280 : 230;
+        const total = count * tileW + (count - 1) * gap;
+        const startX = 600 - total / 2;
+        Array.from({length: count}, (_, index) => group[index] || null).forEach((player, index) => {
+          const x = startX + index * (tileW + gap);
+          const y = rowY[pos];
+          if (player) {
+            drawPlayerTile(ctx, player, x, y, tileW, 102);
+          } else {
+            roundRect(ctx, x, y, tileW, 102, 14);
+            ctx.fillStyle = "rgba(255,255,255,.18)";
+            ctx.fill();
+            drawText(ctx, `${labels[pos]}空位`, x + tileW / 2, y + 37, 20, "rgba(255,255,255,.78)", "800", "center");
+          }
+        });
+      });
+
+      drawText(ctx, "世界足坛数据库 1950-2026", 600, 940, 18, "#66706b", "700", "center");
+      downloadCanvas(canvas, "my-football-best-xi.png");
+    }
+
+    function exportTopImage() {
+      const selected = picks.top10.map(id => playerById.get(id)).filter(Boolean);
+      if (!selected.length) return;
+      const {canvas, ctx} = canvasKit(1000, 1460);
+      ctx.fillStyle = "#f4f6f2";
+      ctx.fillRect(0, 0, 1000, 1460);
+      drawText(ctx, "我的世界足坛历史最佳10人", 500, 44, 38, "#173832", "900", "center");
+      drawText(ctx, `制作者：锅巴32595 · ${selected.length}/10`, 500, 94, 18, "#66706b", "650", "center");
+
+      Array.from({length: 10}, (_, index) => selected[index] || null).forEach((player, index) => {
+        const y = 150 + index * 120;
+        if (player) {
+          drawPlayerTile(ctx, player, 90, y, 820, 96, String(index + 1));
+        } else {
+          roundRect(ctx, 90, y, 820, 96, 14);
+          ctx.fillStyle = "rgba(255,255,255,.62)";
+          ctx.fill();
+          ctx.strokeStyle = "rgba(23,56,50,.14)";
+          ctx.stroke();
+          drawText(ctx, `${index + 1}. 空位`, 500, y + 35, 22, "#66706b", "800", "center");
+        }
+      });
+
+      drawText(ctx, "世界足坛数据库 1950-2026", 500, 1378, 18, "#66706b", "700", "center");
+      downloadCanvas(canvas, "my-football-top-10.png");
+    }
+
+    function renderSpotlight() {
+      const spotlight = document.querySelector("#spotlight");
+      if (mode === "xi") {
+        spotlight.classList.add("show");
+        spotlight.innerHTML = renderPitch();
+        return;
+      }
+      if (mode === "top10") {
+        spotlight.classList.add("show");
+        spotlight.innerHTML = renderTop10();
+        return;
+      }
+      spotlight.classList.remove("show");
+      spotlight.innerHTML = "";
+    }
+
+    function render() {
+      const list = filteredPlayers();
+      document.querySelector("#players").innerHTML = list.map(playerCard).join("");
+      document.querySelector("#empty").classList.toggle("show", list.length === 0);
+      document.querySelector("#totalCount").textContent = players.length;
+      document.querySelector("#shownCount").textContent = list.length;
+      document.querySelector("#xiCount").textContent = `${picks.xi.length}/11`;
+      document.querySelector("#topCount").textContent = `${picks.top10.length}/10`;
+      document.querySelector("#listTitle").textContent = mode === "xi" ? "从球员库选择阵容" : mode === "top10" ? "从球员库选择前十" : "球员列表";
+      document.querySelector("#listHint").textContent = `${list.length} / ${players.length} · 阵容 ${picks.xi.length}/11 · 前十 ${picks.top10.length}/10`;
+      renderSpotlight();
+    }
+
+    function toggleXi(id) {
+      const player = playerById.get(id);
+      if (!player) return;
+      if (picks.xi.includes(id)) {
+        picks.xi = picks.xi.filter(item => item !== id);
+      } else if (!xiBlockReason(player)) {
+        picks.xi = [...picks.xi, id];
+      }
+    }
+
+    function toggleTop(id) {
+      if (!playerById.has(id)) return;
+      if (picks.top10.includes(id)) {
+        picks.top10 = picks.top10.filter(item => item !== id);
+      } else if (picks.top10.length < 10) {
+        picks.top10 = [...picks.top10, id];
+      }
+    }
+
+    function moveTop(id, dir) {
+      const index = picks.top10.indexOf(id);
+      const target = index + Number(dir);
+      if (index === -1 || target < 0 || target >= picks.top10.length) return;
+      const next = [...picks.top10];
+      [next[index], next[target]] = [next[target], next[index]];
+      picks.top10 = next;
+    }
+
+    function handleAction(button) {
+      const action = button.dataset.action;
+      const id = button.dataset.id;
+      if (action === "export-xi") {
+        exportXiImage();
+        return;
+      }
+      if (action === "export-top") {
+        exportTopImage();
+        return;
+      }
+      if (action === "toggle-xi") toggleXi(id);
+      if (action === "toggle-top") toggleTop(id);
+      if (action === "remove-xi") picks.xi = picks.xi.filter(item => item !== id);
+      if (action === "remove-top") picks.top10 = picks.top10.filter(item => item !== id);
+      if (action === "move-top") moveTop(id, button.dataset.dir);
+      if (action === "clear-xi") picks.xi = [];
+      if (action === "clear-top") picks.top10 = [];
+      picks = sanitizePicks(picks);
+      savePicks();
+      render();
+    }
+
+    document.querySelectorAll("[data-mode]").forEach(button => {
+      button.addEventListener("click", () => {
+        mode = button.dataset.mode;
+        document.querySelectorAll("[data-mode]").forEach(item => item.classList.toggle("active", item === button));
+        render();
+      });
+    });
+
+    document.querySelector("#players").addEventListener("click", event => {
+      const button = event.target.closest("button[data-action]");
+      if (button && !button.disabled) handleAction(button);
+    });
+
+    document.querySelector("#spotlight").addEventListener("click", event => {
+      const button = event.target.closest("button[data-action]");
+      if (button && !button.disabled) handleAction(button);
+    });
+
+    Object.values(controls).forEach(control => control.addEventListener("input", render));
+
+    setupControls();
+    render();
+  </script>
+</body>
+</html>
