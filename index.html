@@ -168,6 +168,8 @@
 
     .spotlight.show {
       display: block;
+      overflow-x: auto;
+      padding-bottom: 4px;
     }
 
     .pitch {
@@ -207,6 +209,7 @@
     }
 
     .slot {
+      position: relative;
       min-height: 86px;
       display: grid;
       align-content: center;
@@ -216,6 +219,13 @@
       background: rgba(255, 255, 255, .88);
       border: 1px solid rgba(255, 255, 255, .55);
       text-align: center;
+    }
+
+    .slot-role {
+      color: #1f6f55;
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: 0;
     }
 
     .slot b {
@@ -237,14 +247,40 @@
       color: rgba(255, 255, 255, .74);
     }
 
+    .slot.empty .slot-role {
+      color: rgba(255, 255, 255, .86);
+    }
+
+    .slot-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 4px;
+      margin-top: 4px;
+    }
+
     .choice-bar {
       display: grid;
-      grid-template-columns: 1fr auto;
+      grid-template-columns: 1fr auto auto;
       gap: 10px;
       align-items: center;
       margin-bottom: 10px;
       color: var(--muted);
       font-size: 13px;
+    }
+
+    .formation-control {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      justify-content: flex-end;
+    }
+
+    .formation-control select {
+      min-height: 32px;
+      width: auto;
+      min-width: 126px;
+      padding: 0 10px;
+      font-size: 12px;
     }
 
     .choice-actions {
@@ -298,7 +334,8 @@
     }
 
     .rank-actions .mini,
-    .slot .mini {
+    .slot .mini,
+    .slot-actions .mini {
       width: auto;
     }
 
@@ -450,13 +487,17 @@
 
       .pitch {
         min-height: auto;
+        min-width: 720px;
         padding: 12px;
       }
 
       .pitch-row.forwards,
-      .pitch-row.mids,
+      .pitch-row.mids {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
       .pitch-row.defs {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
       }
 
       .pitch-row.gk {
@@ -504,9 +545,12 @@
       }
 
       .pitch-row.forwards,
-      .pitch-row.mids,
+      .pitch-row.mids {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
       .pitch-row.defs {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
       }
     }
   </style>
@@ -714,6 +758,152 @@
       {name:"Rodri", flag:"🇪🇸", country:"Spain", pos:"MID", era:"2010s-2020s", years:"2015-", note:"Villarreal, Atletico Madrid, Manchester City"}
     ];
 
+    const extraPlayers = [
+      {name:"Dida", cn:"迪达", nick:"", flag:"🇧🇷", country:"Brazil", pos:"GK", era:"1990s-2010s", years:"1992-2015", note:"Vitoria, Cruzeiro, Corinthians, Milan, Internacional"},
+      {name:"Claudio Taffarel", cn:"克劳迪奥·塔法雷尔", nick:"", flag:"🇧🇷", country:"Brazil", pos:"GK", era:"1980s-2000s", years:"1985-2003", note:"Internacional, Parma, Reggiana, Atletico Mineiro, Galatasaray"},
+      {name:"Julio Cesar", cn:"儒利奥·塞萨尔", nick:"", flag:"🇧🇷", country:"Brazil", pos:"GK", era:"1990s-2010s", years:"1997-2018", note:"Flamengo, Inter, QPR, Benfica"},
+      {name:"Alisson", cn:"阿利松", nick:"", flag:"🇧🇷", country:"Brazil", pos:"GK", era:"2010s-2020s", years:"2013-", note:"Internacional, Roma, Liverpool"},
+      {name:"Ederson", cn:"埃德森", nick:"", flag:"🇧🇷", country:"Brazil", pos:"GK", era:"2010s-2020s", years:"2012-", note:"Rio Ave, Benfica, Manchester City"},
+      {name:"Rogerio Ceni", cn:"罗杰里奥·塞尼", nick:"任意球门将", flag:"🇧🇷", country:"Brazil", pos:"GK", era:"1990s-2010s", years:"1990-2015", note:"Sao Paulo"},
+      {name:"Ubaldo Fillol", cn:"乌巴尔多·菲洛尔", nick:"", flag:"🇦🇷", country:"Argentina", pos:"GK", era:"1960s-1990s", years:"1969-1991", note:"Quilmes, Racing Club, River Plate, Flamengo, Atletico Madrid"},
+      {name:"Jose Luis Chilavert", cn:"何塞·路易斯·奇拉维特", nick:"门将射手", flag:"🇵🇾", country:"Paraguay", pos:"GK", era:"1980s-2000s", years:"1982-2004", note:"San Lorenzo, Zaragoza, Velez Sarsfield, Strasbourg"},
+      {name:"Rene Higuita", cn:"雷内·伊基塔", nick:"疯子门将", flag:"🇨🇴", country:"Colombia", pos:"GK", era:"1980s-2010s", years:"1985-2010", note:"Atletico Nacional, Valladolid, Veracruz"},
+      {name:"Keylor Navas", cn:"凯洛尔·纳瓦斯", nick:"", flag:"🇨🇷", country:"Costa Rica", pos:"GK", era:"2000s-2020s", years:"2005-", note:"Saprissa, Levante, Real Madrid, PSG, Nottingham Forest"},
+      {name:"Claudio Bravo", cn:"克劳迪奥·布拉沃", nick:"", flag:"🇨🇱", country:"Chile", pos:"GK", era:"2000s-2020s", years:"2002-", note:"Colo-Colo, Real Sociedad, Barcelona, Manchester City, Betis"},
+      {name:"Tim Howard", cn:"蒂姆·霍华德", nick:"", flag:"🇺🇸", country:"United States", pos:"GK", era:"1990s-2010s", years:"1997-2019", note:"MetroStars, Manchester United, Everton, Colorado Rapids"},
+      {name:"Guillermo Ochoa", cn:"吉列尔莫·奥乔亚", nick:"墨西哥门神", flag:"🇲🇽", country:"Mexico", pos:"GK", era:"2000s-2020s", years:"2004-", note:"America, Ajaccio, Malaga, Granada, Standard Liege, Salernitana"},
+      {name:"David de Gea", cn:"大卫·德赫亚", nick:"", flag:"🇪🇸", country:"Spain", pos:"GK", era:"2000s-2020s", years:"2009-", note:"Atletico Madrid, Manchester United, Fiorentina"},
+      {name:"Edwin van der Sar", cn:"埃德温·范德萨", nick:"", flag:"🇳🇱", country:"Netherlands", pos:"GK", era:"1990s-2010s", years:"1990-2011", note:"Ajax, Juventus, Fulham, Manchester United"},
+      {name:"Sepp Maier", cn:"塞普·迈尔", nick:"", flag:"🇩🇪", country:"Germany", pos:"GK", era:"1960s-1980s", years:"1962-1980", note:"Bayern Munich"},
+      {name:"Harald Schumacher", cn:"哈拉尔德·舒马赫", nick:"", flag:"🇩🇪", country:"Germany", pos:"GK", era:"1970s-1990s", years:"1972-1996", note:"Koln, Schalke, Bayern Munich"},
+      {name:"Walter Zenga", cn:"沃尔特·曾加", nick:"", flag:"🇮🇹", country:"Italy", pos:"GK", era:"1970s-1990s", years:"1978-1999", note:"Inter, Sampdoria, Padova, New England Revolution"},
+      {name:"Gianluca Pagliuca", cn:"吉安卢卡·帕柳卡", nick:"", flag:"🇮🇹", country:"Italy", pos:"GK", era:"1980s-2000s", years:"1987-2007", note:"Sampdoria, Inter, Bologna, Ascoli"},
+      {name:"Andoni Zubizarreta", cn:"安多尼·苏比萨雷塔", nick:"", flag:"🇪🇸", country:"Spain", pos:"GK", era:"1980s-1990s", years:"1981-1998", note:"Athletic Bilbao, Barcelona, Valencia"},
+      {name:"Djalma Santos", cn:"贾尔马·桑托斯", nick:"", flag:"🇧🇷", country:"Brazil", pos:"DEF", era:"1940s-1970s", years:"1948-1970", note:"Portuguesa, Palmeiras, Atletico Paranaense"},
+      {name:"Junior", cn:"儒尼奥尔", nick:"", flag:"🇧🇷", country:"Brazil", pos:"DEF", era:"1970s-1990s", years:"1974-1993", note:"Flamengo, Torino, Pescara"},
+      {name:"Branco", cn:"布兰科", nick:"", flag:"🇧🇷", country:"Brazil", pos:"DEF", era:"1980s-2000s", years:"1980-2000", note:"Internacional, Fluminense, Brescia, Genoa, Porto"},
+      {name:"Lucio", cn:"卢西奥", nick:"", flag:"🇧🇷", country:"Brazil", pos:"DEF", era:"1990s-2010s", years:"1998-2020", note:"Internacional, Leverkusen, Bayern Munich, Inter, Juventus"},
+      {name:"Aldair", cn:"阿尔代尔", nick:"", flag:"🇧🇷", country:"Brazil", pos:"DEF", era:"1980s-2000s", years:"1985-2009", note:"Flamengo, Benfica, Roma"},
+      {name:"Marquinhos", cn:"马尔基尼奥斯", nick:"", flag:"🇧🇷", country:"Brazil", pos:"DEF", era:"2010s-2020s", years:"2011-", note:"Corinthians, Roma, PSG"},
+      {name:"David Luiz", cn:"大卫·路易斯", nick:"", flag:"🇧🇷", country:"Brazil", pos:"DEF", era:"2000s-2020s", years:"2006-", note:"Vitoria, Benfica, Chelsea, PSG, Arsenal, Flamengo"},
+      {name:"Juan", cn:"胡安", nick:"", flag:"🇧🇷", country:"Brazil", pos:"DEF", era:"1990s-2010s", years:"1996-2019", note:"Flamengo, Leverkusen, Roma, Internacional"},
+      {name:"Maicon", cn:"麦孔", nick:"", flag:"🇧🇷", country:"Brazil", pos:"DEF", era:"2000s-2020s", years:"2001-2021", note:"Cruzeiro, Monaco, Inter, Manchester City, Roma"},
+      {name:"Leonardo", cn:"莱昂纳多", nick:"", flag:"🇧🇷", country:"Brazil", pos:"DEF", era:"1980s-2000s", years:"1987-2003", note:"Flamengo, Sao Paulo, Valencia, PSG, Milan"},
+      {name:"Andreas Brehme", cn:"安德烈亚斯·布雷默", nick:"", flag:"🇩🇪", country:"Germany", pos:"DEF", era:"1970s-1990s", years:"1978-1998", note:"Kaiserslautern, Bayern Munich, Inter, Zaragoza"},
+      {name:"Jurgen Kohler", cn:"尤尔根·科勒", nick:"", flag:"🇩🇪", country:"Germany", pos:"DEF", era:"1980s-2000s", years:"1983-2002", note:"Waldhof Mannheim, Koln, Bayern Munich, Juventus, Dortmund"},
+      {name:"Matthias Sammer", cn:"马蒂亚斯·萨默尔", nick:"", flag:"🇩🇪", country:"Germany", pos:"DEF", era:"1980s-1990s", years:"1985-1998", note:"Dynamo Dresden, Stuttgart, Inter, Dortmund"},
+      {name:"Berti Vogts", cn:"贝尔蒂·福格茨", nick:"", flag:"🇩🇪", country:"Germany", pos:"DEF", era:"1960s-1970s", years:"1965-1979", note:"Borussia Monchengladbach"},
+      {name:"Alessandro Nesta", cn:"亚历山德罗·内斯塔", nick:"", flag:"🇮🇹", country:"Italy", pos:"DEF", era:"1990s-2010s", years:"1993-2014", note:"Lazio, Milan, Montreal Impact, Chennaiyin"},
+      {name:"Alessandro Costacurta", cn:"亚历山德罗·科斯塔库塔", nick:"", flag:"🇮🇹", country:"Italy", pos:"DEF", era:"1980s-2000s", years:"1986-2007", note:"Milan"},
+      {name:"Claudio Gentile", cn:"克劳迪奥·詹蒂莱", nick:"", flag:"🇮🇹", country:"Italy", pos:"DEF", era:"1970s-1980s", years:"1971-1988", note:"Varese, Juventus, Fiorentina"},
+      {name:"Antonio Cabrini", cn:"安东尼奥·卡布里尼", nick:"", flag:"🇮🇹", country:"Italy", pos:"DEF", era:"1970s-1990s", years:"1973-1991", note:"Cremonese, Atalanta, Juventus, Bologna"},
+      {name:"Marco Materazzi", cn:"马尔科·马特拉齐", nick:"", flag:"🇮🇹", country:"Italy", pos:"DEF", era:"1990s-2010s", years:"1993-2014", note:"Perugia, Everton, Inter, Chennaiyin"},
+      {name:"Giorgio Chiellini", cn:"乔治·基耶利尼", nick:"", flag:"🇮🇹", country:"Italy", pos:"DEF", era:"2000s-2020s", years:"2000-2023", note:"Livorno, Fiorentina, Juventus, LAFC"},
+      {name:"Leonardo Bonucci", cn:"莱昂纳多·博努奇", nick:"", flag:"🇮🇹", country:"Italy", pos:"DEF", era:"2000s-2020s", years:"2005-2024", note:"Inter, Bari, Juventus, Milan, Union Berlin, Fenerbahce"},
+      {name:"Gerard Pique", cn:"杰拉德·皮克", nick:"", flag:"🇪🇸", country:"Spain", pos:"DEF", era:"2000s-2020s", years:"2004-2022", note:"Manchester United, Zaragoza, Barcelona"},
+      {name:"Jordi Alba", cn:"约尔迪·阿尔巴", nick:"", flag:"🇪🇸", country:"Spain", pos:"DEF", era:"2000s-2020s", years:"2007-", note:"Valencia, Barcelona, Inter Miami"},
+      {name:"Fernando Hierro", cn:"费尔南多·耶罗", nick:"", flag:"🇪🇸", country:"Spain", pos:"DEF", era:"1980s-2000s", years:"1987-2005", note:"Valladolid, Real Madrid, Al Rayyan, Bolton"},
+      {name:"Rio Ferdinand", cn:"里奥·费迪南德", nick:"", flag:"🇬🇧", country:"England", pos:"DEF", era:"1990s-2010s", years:"1995-2015", note:"West Ham, Leeds, Manchester United, QPR"},
+      {name:"John Terry", cn:"约翰·特里", nick:"", flag:"🇬🇧", country:"England", pos:"DEF", era:"1990s-2010s", years:"1998-2018", note:"Chelsea, Aston Villa"},
+      {name:"Ashley Cole", cn:"阿什利·科尔", nick:"", flag:"🇬🇧", country:"England", pos:"DEF", era:"1990s-2010s", years:"1999-2019", note:"Arsenal, Chelsea, Roma, LA Galaxy, Derby County"},
+      {name:"Sol Campbell", cn:"索尔·坎贝尔", nick:"", flag:"🇬🇧", country:"England", pos:"DEF", era:"1990s-2010s", years:"1992-2011", note:"Tottenham, Arsenal, Portsmouth, Notts County, Newcastle"},
+      {name:"Gary Neville", cn:"加里·内维尔", nick:"", flag:"🇬🇧", country:"England", pos:"DEF", era:"1990s-2010s", years:"1992-2011", note:"Manchester United"},
+      {name:"Laurent Blanc", cn:"洛朗·布兰科", nick:"", flag:"🇫🇷", country:"France", pos:"DEF", era:"1980s-2000s", years:"1983-2003", note:"Montpellier, Napoli, Barcelona, Marseille, Inter, Manchester United"},
+      {name:"Bixente Lizarazu", cn:"比森特·利扎拉祖", nick:"", flag:"🇫🇷", country:"France", pos:"DEF", era:"1980s-2000s", years:"1988-2006", note:"Bordeaux, Athletic Bilbao, Bayern Munich, Marseille"},
+      {name:"Raphael Varane", cn:"拉斐尔·瓦拉内", nick:"", flag:"🇫🇷", country:"France", pos:"DEF", era:"2010s-2020s", years:"2010-", note:"Lens, Real Madrid, Manchester United, Como"},
+      {name:"Ronald Koeman", cn:"罗纳德·科曼", nick:"", flag:"🇳🇱", country:"Netherlands", pos:"DEF", era:"1980s-1990s", years:"1980-1997", note:"Groningen, Ajax, PSV, Barcelona, Feyenoord"},
+      {name:"Jaap Stam", cn:"雅普·斯塔姆", nick:"", flag:"🇳🇱", country:"Netherlands", pos:"DEF", era:"1990s-2000s", years:"1992-2007", note:"PSV, Manchester United, Lazio, Milan, Ajax"},
+      {name:"Ruud Krol", cn:"鲁德·克罗尔", nick:"", flag:"🇳🇱", country:"Netherlands", pos:"DEF", era:"1960s-1980s", years:"1968-1986", note:"Ajax, Vancouver Whitecaps, Napoli, Cannes"},
+      {name:"Pepe", cn:"佩佩", nick:"", flag:"🇵🇹", country:"Portugal", pos:"DEF", era:"2000s-2020s", years:"2001-2024", note:"Maritimo, Porto, Real Madrid, Besiktas"},
+      {name:"Ricardo Carvalho", cn:"里卡多·卡瓦略", nick:"", flag:"🇵🇹", country:"Portugal", pos:"DEF", era:"1990s-2010s", years:"1997-2017", note:"Porto, Chelsea, Real Madrid, Monaco, Shanghai SIPG"},
+      {name:"Joao Cancelo", cn:"若昂·坎塞洛", nick:"", flag:"🇵🇹", country:"Portugal", pos:"DEF", era:"2010s-2020s", years:"2012-", note:"Benfica, Valencia, Inter, Juventus, Manchester City, Bayern Munich, Barcelona, Al Hilal"},
+      {name:"Ruben Dias", cn:"鲁本·迪亚斯", nick:"", flag:"🇵🇹", country:"Portugal", pos:"DEF", era:"2010s-2020s", years:"2015-", note:"Benfica, Manchester City"},
+      {name:"Roberto Ayala", cn:"罗伯托·阿亚拉", nick:"", flag:"🇦🇷", country:"Argentina", pos:"DEF", era:"1990s-2010s", years:"1991-2010", note:"Ferro, River Plate, Napoli, Milan, Valencia, Zaragoza"},
+      {name:"Oscar Ruggeri", cn:"奥斯卡·鲁杰里", nick:"", flag:"🇦🇷", country:"Argentina", pos:"DEF", era:"1980s-1990s", years:"1980-1997", note:"Boca Juniors, River Plate, Logrones, Real Madrid, Velez"},
+      {name:"Diego Godin", cn:"迭戈·戈丁", nick:"", flag:"🇺🇾", country:"Uruguay", pos:"DEF", era:"2000s-2020s", years:"2003-2023", note:"Cerro, Nacional, Villarreal, Atletico Madrid, Inter, Cagliari, Atletico Mineiro"},
+      {name:"Darijo Srna", cn:"达里奥·斯尔纳", nick:"", flag:"🇭🇷", country:"Croatia", pos:"DEF", era:"1990s-2010s", years:"1999-2019", note:"Hajduk Split, Shakhtar Donetsk, Cagliari"},
+      {name:"Ivan Cordoba", cn:"伊万·科尔多巴", nick:"", flag:"🇨🇴", country:"Colombia", pos:"DEF", era:"1990s-2010s", years:"1993-2012", note:"Deportivo Rionegro, San Lorenzo, Inter"},
+      {name:"Achraf Hakimi", cn:"阿什拉夫·哈基米", nick:"", flag:"🇲🇦", country:"Morocco", pos:"DEF", era:"2010s-2020s", years:"2017-", note:"Real Madrid, Dortmund, Inter, PSG"},
+      {name:"Kalidou Koulibaly", cn:"卡利杜·库利巴利", nick:"", flag:"🇸🇳", country:"Senegal", pos:"DEF", era:"2010s-2020s", years:"2010-", note:"Metz, Genk, Napoli, Chelsea, Al Hilal"},
+      {name:"Kim Min-jae", cn:"金玟哉", nick:"", flag:"🇰🇷", country:"South Korea", pos:"DEF", era:"2010s-2020s", years:"2016-", note:"Gyeongju KHNP, Jeonbuk, Beijing Guoan, Fenerbahce, Napoli, Bayern Munich"},
+      {name:"Falcao (Brazil)", cn:"法尔考", nick:"", flag:"🇧🇷", country:"Brazil", pos:"MID", era:"1970s-1990s", years:"1973-1990", note:"Internacional, Roma, Sao Paulo"},
+      {name:"Dunga", cn:"邓加", nick:"", flag:"🇧🇷", country:"Brazil", pos:"MID", era:"1980s-2000s", years:"1980-2000", note:"Internacional, Vasco da Gama, Fiorentina, Stuttgart, Jubilo Iwata"},
+      {name:"Bebeto", cn:"贝贝托", nick:"", flag:"🇧🇷", country:"Brazil", pos:"FWD", era:"1980s-2000s", years:"1983-2002", note:"Flamengo, Vasco da Gama, Deportivo, Sevilla, Botafogo"},
+      {name:"Careca", cn:"卡雷卡", nick:"", flag:"🇧🇷", country:"Brazil", pos:"FWD", era:"1970s-1990s", years:"1978-1999", note:"Guarani, Sao Paulo, Napoli, Kashiwa Reysol"},
+      {name:"Juninho Pernambucano", cn:"儒尼尼奥·佩南布卡诺", nick:"任意球大师", flag:"🇧🇷", country:"Brazil", pos:"MID", era:"1990s-2010s", years:"1993-2013", note:"Sport Recife, Vasco da Gama, Lyon, Al Gharafa, New York Red Bulls"},
+      {name:"Casemiro", cn:"卡塞米罗", nick:"", flag:"🇧🇷", country:"Brazil", pos:"MID", era:"2010s-2020s", years:"2010-", note:"Sao Paulo, Real Madrid, Porto, Manchester United"},
+      {name:"Fernandinho", cn:"费尔南迪尼奥", nick:"", flag:"🇧🇷", country:"Brazil", pos:"MID", era:"2000s-2020s", years:"2002-", note:"Athletico Paranaense, Shakhtar Donetsk, Manchester City"},
+      {name:"Adriano", cn:"阿德里亚诺", nick:"国王", flag:"🇧🇷", country:"Brazil", pos:"FWD", era:"2000s-2010s", years:"2000-2016", note:"Flamengo, Inter, Parma, Roma, Corinthians"},
+      {name:"Hulk", cn:"胡尔克", nick:"", flag:"🇧🇷", country:"Brazil", pos:"FWD", era:"2000s-2020s", years:"2004-", note:"Vitoria, Porto, Zenit, Shanghai SIPG, Atletico Mineiro"},
+      {name:"Ze Roberto", cn:"泽·罗伯托", nick:"", flag:"🇧🇷", country:"Brazil", pos:"MID", era:"1990s-2010s", years:"1994-2017", note:"Portuguesa, Real Madrid, Leverkusen, Bayern Munich, Hamburg, Palmeiras"},
+      {name:"Hernan Crespo", cn:"埃尔南·克雷斯波", nick:"", flag:"🇦🇷", country:"Argentina", pos:"FWD", era:"1990s-2010s", years:"1993-2012", note:"River Plate, Parma, Lazio, Inter, Chelsea, Milan, Genoa"},
+      {name:"Claudio Caniggia", cn:"克劳迪奥·卡尼吉亚", nick:"风之子", flag:"🇦🇷", country:"Argentina", pos:"FWD", era:"1980s-2000s", years:"1985-2004", note:"River Plate, Verona, Atalanta, Roma, Benfica, Dundee, Rangers"},
+      {name:"Ariel Ortega", cn:"阿里尔·奥尔特加", nick:"", flag:"🇦🇷", country:"Argentina", pos:"MID", era:"1990s-2010s", years:"1991-2012", note:"River Plate, Valencia, Sampdoria, Parma, Fenerbahce"},
+      {name:"Diego Simeone", cn:"迭戈·西蒙尼", nick:"", flag:"🇦🇷", country:"Argentina", pos:"MID", era:"1980s-2000s", years:"1987-2006", note:"Velez Sarsfield, Sevilla, Atletico Madrid, Inter, Lazio, Racing Club"},
+      {name:"Fernando Redondo", cn:"费尔南多·雷东多", nick:"", flag:"🇦🇷", country:"Argentina", pos:"MID", era:"1980s-2000s", years:"1985-2004", note:"Argentinos Juniors, Tenerife, Real Madrid, Milan"},
+      {name:"Pablo Aimar", cn:"巴勃罗·艾马尔", nick:"", flag:"🇦🇷", country:"Argentina", pos:"MID", era:"1990s-2010s", years:"1996-2015", note:"River Plate, Valencia, Zaragoza, Benfica, Johor Darul Ta'zim"},
+      {name:"Javier Mascherano", cn:"哈维尔·马斯切拉诺", nick:"", flag:"🇦🇷", country:"Argentina", pos:"MID", era:"2000s-2020s", years:"2003-2020", note:"River Plate, Corinthians, West Ham, Liverpool, Barcelona, Hebei, Estudiantes"},
+      {name:"Gonzalo Higuain", cn:"冈萨洛·伊瓜因", nick:"小烟枪", flag:"🇦🇷", country:"Argentina", pos:"FWD", era:"2000s-2020s", years:"2005-2022", note:"River Plate, Real Madrid, Napoli, Juventus, Milan, Chelsea, Inter Miami"},
+      {name:"Lautaro Martinez", cn:"劳塔罗·马丁内斯", nick:"", flag:"🇦🇷", country:"Argentina", pos:"FWD", era:"2010s-2020s", years:"2015-", note:"Racing Club, Inter"},
+      {name:"Enzo Fernandez", cn:"恩佐·费尔南德斯", nick:"", flag:"🇦🇷", country:"Argentina", pos:"MID", era:"2020s", years:"2019-", note:"River Plate, Benfica, Chelsea"},
+      {name:"Sergio Busquets", cn:"塞尔吉奥·布斯克茨", nick:"布教授", flag:"🇪🇸", country:"Spain", pos:"MID", era:"2000s-2020s", years:"2008-", note:"Barcelona, Inter Miami"},
+      {name:"Xabi Alonso", cn:"哈维·阿隆索", nick:"", flag:"🇪🇸", country:"Spain", pos:"MID", era:"1990s-2010s", years:"1999-2017", note:"Real Sociedad, Eibar, Liverpool, Real Madrid, Bayern Munich"},
+      {name:"Cesc Fabregas", cn:"塞斯克·法布雷加斯", nick:"", flag:"🇪🇸", country:"Spain", pos:"MID", era:"2000s-2020s", years:"2003-2023", note:"Arsenal, Barcelona, Chelsea, Monaco, Como"},
+      {name:"David Silva", cn:"大卫·席尔瓦", nick:"", flag:"🇪🇸", country:"Spain", pos:"MID", era:"2000s-2020s", years:"2004-2023", note:"Valencia, Eibar, Celta, Manchester City, Real Sociedad"},
+      {name:"Luis Enrique", cn:"路易斯·恩里克", nick:"", flag:"🇪🇸", country:"Spain", pos:"MID", era:"1980s-2000s", years:"1989-2004", note:"Sporting Gijon, Real Madrid, Barcelona"},
+      {name:"Pedri", cn:"佩德里", nick:"", flag:"🇪🇸", country:"Spain", pos:"MID", era:"2020s", years:"2019-", note:"Las Palmas, Barcelona"},
+      {name:"Gavi", cn:"加维", nick:"", flag:"🇪🇸", country:"Spain", pos:"MID", era:"2020s", years:"2021-", note:"Barcelona"},
+      {name:"Fernando Morientes", cn:"费尔南多·莫伦特斯", nick:"", flag:"🇪🇸", country:"Spain", pos:"FWD", era:"1990s-2010s", years:"1993-2010", note:"Albacete, Zaragoza, Real Madrid, Monaco, Liverpool, Valencia, Marseille"},
+      {name:"Jean-Pierre Papin", cn:"让-皮埃尔·帕潘", nick:"", flag:"🇫🇷", country:"France", pos:"FWD", era:"1980s-2000s", years:"1984-2004", note:"Club Brugge, Marseille, Milan, Bayern Munich, Bordeaux"},
+      {name:"David Trezeguet", cn:"大卫·特雷泽盖", nick:"", flag:"🇫🇷", country:"France", pos:"FWD", era:"1990s-2010s", years:"1994-2014", note:"Monaco, Juventus, Hercules, River Plate, Newell's"},
+      {name:"Olivier Giroud", cn:"奥利维耶·吉鲁", nick:"", flag:"🇫🇷", country:"France", pos:"FWD", era:"2000s-2020s", years:"2005-", note:"Grenoble, Tours, Montpellier, Arsenal, Chelsea, Milan, LAFC"},
+      {name:"Paul Pogba", cn:"保罗·博格巴", nick:"", flag:"🇫🇷", country:"France", pos:"MID", era:"2010s-2020s", years:"2011-", note:"Manchester United, Juventus"},
+      {name:"Emmanuel Petit", cn:"埃马纽埃尔·佩蒂", nick:"", flag:"🇫🇷", country:"France", pos:"MID", era:"1980s-2000s", years:"1988-2004", note:"Monaco, Arsenal, Barcelona, Chelsea"},
+      {name:"Robert Pires", cn:"罗贝尔·皮雷", nick:"", flag:"🇫🇷", country:"France", pos:"MID", era:"1990s-2010s", years:"1992-2016", note:"Metz, Marseille, Arsenal, Villarreal, Aston Villa, Goa"},
+      {name:"Youri Djorkaeff", cn:"尤里·德约卡夫", nick:"", flag:"🇫🇷", country:"France", pos:"MID", era:"1980s-2000s", years:"1984-2006", note:"Grenoble, Strasbourg, Monaco, PSG, Inter, Kaiserslautern, Bolton, New York Red Bulls"},
+      {name:"Franck Ribery", cn:"弗兰克·里贝里", nick:"刀疤脸", flag:"🇫🇷", country:"France", pos:"FWD", era:"2000s-2020s", years:"2000-2022", note:"Boulogne, Metz, Galatasaray, Marseille, Bayern Munich, Fiorentina, Salernitana"},
+      {name:"Kingsley Coman", cn:"金斯利·科曼", nick:"", flag:"🇫🇷", country:"France", pos:"FWD", era:"2010s-2020s", years:"2013-", note:"PSG, Juventus, Bayern Munich"},
+      {name:"Karl-Heinz Rummenigge", cn:"卡尔-海因茨·鲁梅尼格", nick:"", flag:"🇩🇪", country:"Germany", pos:"FWD", era:"1970s-1980s", years:"1974-1989", note:"Bayern Munich, Inter, Servette"},
+      {name:"Jurgen Klinsmann", cn:"尤尔根·克林斯曼", nick:"金色轰炸机", flag:"🇩🇪", country:"Germany", pos:"FWD", era:"1980s-2000s", years:"1981-2003", note:"Stuttgart, Inter, Monaco, Tottenham, Bayern Munich, Sampdoria, Orange County Blue Star"},
+      {name:"Uwe Seeler", cn:"乌韦·席勒", nick:"", flag:"🇩🇪", country:"Germany", pos:"FWD", era:"1950s-1970s", years:"1954-1972", note:"Hamburg"},
+      {name:"Rudi Voller", cn:"鲁迪·沃勒尔", nick:"", flag:"🇩🇪", country:"Germany", pos:"FWD", era:"1970s-1990s", years:"1977-1996", note:"1860 Munich, Werder Bremen, Roma, Marseille, Leverkusen"},
+      {name:"Michael Ballack", cn:"迈克尔·巴拉克", nick:"", flag:"🇩🇪", country:"Germany", pos:"MID", era:"1990s-2010s", years:"1995-2012", note:"Chemnitzer, Kaiserslautern, Leverkusen, Bayern Munich, Chelsea"},
+      {name:"Bernd Schuster", cn:"伯恩德·舒斯特尔", nick:"", flag:"🇩🇪", country:"Germany", pos:"MID", era:"1970s-1990s", years:"1978-1997", note:"Koln, Barcelona, Real Madrid, Atletico Madrid, Leverkusen, UNAM"},
+      {name:"Sami Khedira", cn:"萨米·赫迪拉", nick:"", flag:"🇩🇪", country:"Germany", pos:"MID", era:"2000s-2020s", years:"2006-2021", note:"Stuttgart, Real Madrid, Juventus, Hertha Berlin"},
+      {name:"Joshua Kimmich", cn:"约书亚·基米希", nick:"", flag:"🇩🇪", country:"Germany", pos:"MID", era:"2010s-2020s", years:"2013-", note:"Leipzig, Bayern Munich"},
+      {name:"Leroy Sane", cn:"勒鲁瓦·萨内", nick:"", flag:"🇩🇪", country:"Germany", pos:"FWD", era:"2010s-2020s", years:"2014-", note:"Schalke, Manchester City, Bayern Munich"},
+      {name:"Bryan Robson", cn:"布莱恩·罗布森", nick:"", flag:"🇬🇧", country:"England", pos:"MID", era:"1970s-1990s", years:"1974-1997", note:"West Brom, Manchester United, Middlesbrough"},
+      {name:"Gary Lineker", cn:"加里·莱因克尔", nick:"", flag:"🇬🇧", country:"England", pos:"FWD", era:"1970s-1990s", years:"1978-1994", note:"Leicester City, Everton, Barcelona, Tottenham, Nagoya Grampus"},
+      {name:"Paul Gascoigne", cn:"保罗·加斯科因", nick:"加扎", flag:"🇬🇧", country:"England", pos:"MID", era:"1980s-2000s", years:"1985-2004", note:"Newcastle, Tottenham, Lazio, Rangers, Middlesbrough, Everton"},
+      {name:"Ian Rush", cn:"伊恩·拉什", nick:"", flag:"🇬🇧", country:"Wales", pos:"FWD", era:"1970s-2000s", years:"1978-2000", note:"Chester City, Liverpool, Juventus, Leeds, Newcastle, Wrexham"},
+      {name:"John Barnes", cn:"约翰·巴恩斯", nick:"", flag:"🇬🇧", country:"England", pos:"MID", era:"1980s-1990s", years:"1981-1999", note:"Watford, Liverpool, Newcastle, Charlton"},
+      {name:"Glenn Hoddle", cn:"格伦·霍德尔", nick:"", flag:"🇬🇧", country:"England", pos:"MID", era:"1970s-1990s", years:"1975-1995", note:"Tottenham, Monaco, Swindon, Chelsea"},
+      {name:"Jimmy Greaves", cn:"吉米·格里夫斯", nick:"", flag:"🇬🇧", country:"England", pos:"FWD", era:"1950s-1970s", years:"1957-1971", note:"Chelsea, Milan, Tottenham, West Ham"},
+      {name:"Sandro Mazzola", cn:"桑德罗·马佐拉", nick:"", flag:"🇮🇹", country:"Italy", pos:"MID", era:"1960s-1970s", years:"1960-1977", note:"Inter"},
+      {name:"Gianni Rivera", cn:"詹尼·里维拉", nick:"", flag:"🇮🇹", country:"Italy", pos:"MID", era:"1950s-1970s", years:"1959-1979", note:"Alessandria, Milan"},
+      {name:"Bruno Conti", cn:"布鲁诺·孔蒂", nick:"", flag:"🇮🇹", country:"Italy", pos:"MID", era:"1970s-1990s", years:"1973-1991", note:"Roma, Genoa"},
+      {name:"Salvatore Schillaci", cn:"萨尔瓦托雷·斯基拉奇", nick:"意大利之夏", flag:"🇮🇹", country:"Italy", pos:"FWD", era:"1980s-1990s", years:"1982-1999", note:"Messina, Juventus, Inter, Jubilo Iwata"},
+      {name:"Christian Vieri", cn:"克里斯蒂安·维耶里", nick:"", flag:"🇮🇹", country:"Italy", pos:"FWD", era:"1990s-2000s", years:"1991-2009", note:"Torino, Pisa, Ravenna, Venezia, Atalanta, Juventus, Atletico Madrid, Lazio, Inter, Milan"},
+      {name:"Filippo Inzaghi", cn:"菲利波·因扎吉", nick:"九爷", flag:"🇮🇹", country:"Italy", pos:"FWD", era:"1990s-2010s", years:"1991-2012", note:"Piacenza, Parma, Atalanta, Juventus, Milan"},
+      {name:"Luca Toni", cn:"卢卡·托尼", nick:"", flag:"🇮🇹", country:"Italy", pos:"FWD", era:"1990s-2010s", years:"1994-2016", note:"Palermo, Fiorentina, Bayern Munich, Roma, Juventus, Verona"},
+      {name:"Gennaro Gattuso", cn:"热纳罗·加图索", nick:"屠夫", flag:"🇮🇹", country:"Italy", pos:"MID", era:"1990s-2010s", years:"1995-2013", note:"Perugia, Rangers, Salernitana, Milan, Sion"},
+      {name:"Daniele De Rossi", cn:"达尼埃莱·德罗西", nick:"", flag:"🇮🇹", country:"Italy", pos:"MID", era:"2000s-2020s", years:"2001-2020", note:"Roma, Boca Juniors"},
+      {name:"Marco Verratti", cn:"马尔科·维拉蒂", nick:"", flag:"🇮🇹", country:"Italy", pos:"MID", era:"2000s-2020s", years:"2008-", note:"Pescara, PSG, Al Arabi"},
+      {name:"Johan Neeskens", cn:"约翰·内斯肯斯", nick:"", flag:"🇳🇱", country:"Netherlands", pos:"MID", era:"1960s-1990s", years:"1968-1991", note:"Ajax, Barcelona, New York Cosmos, Groningen, Fort Lauderdale Sun"},
+      {name:"Clarence Seedorf", cn:"克拉伦斯·西多夫", nick:"", flag:"🇳🇱", country:"Netherlands", pos:"MID", era:"1990s-2010s", years:"1992-2014", note:"Ajax, Sampdoria, Real Madrid, Inter, Milan, Botafogo"},
+      {name:"Edgar Davids", cn:"埃德加·戴维斯", nick:"野猪", flag:"🇳🇱", country:"Netherlands", pos:"MID", era:"1990s-2010s", years:"1991-2014", note:"Ajax, Milan, Juventus, Barcelona, Inter, Tottenham, Crystal Palace, Barnet"},
+      {name:"Patrick Kluivert", cn:"帕特里克·克鲁伊维特", nick:"", flag:"🇳🇱", country:"Netherlands", pos:"FWD", era:"1990s-2000s", years:"1994-2008", note:"Ajax, Milan, Barcelona, Newcastle, Valencia, PSV, Lille"},
+      {name:"Robin van Persie", cn:"罗宾·范佩西", nick:"", flag:"🇳🇱", country:"Netherlands", pos:"FWD", era:"2000s-2010s", years:"2001-2019", note:"Feyenoord, Arsenal, Manchester United, Fenerbahce"},
+      {name:"Ruud van Nistelrooy", cn:"路德·范尼斯特鲁伊", nick:"小禁区之王", flag:"🇳🇱", country:"Netherlands", pos:"FWD", era:"1990s-2010s", years:"1993-2012", note:"Den Bosch, Heerenveen, PSV, Manchester United, Real Madrid, Hamburg, Malaga"},
+      {name:"Marc Overmars", cn:"马克·奥维马斯", nick:"", flag:"🇳🇱", country:"Netherlands", pos:"FWD", era:"1990s-2000s", years:"1990-2009", note:"Willem II, Ajax, Arsenal, Barcelona, Go Ahead Eagles"},
+      {name:"Frenkie de Jong", cn:"弗朗基·德容", nick:"", flag:"🇳🇱", country:"Netherlands", pos:"MID", era:"2010s-2020s", years:"2015-", note:"Willem II, Ajax, Barcelona"},
+      {name:"Nani", cn:"纳尼", nick:"", flag:"🇵🇹", country:"Portugal", pos:"FWD", era:"2000s-2020s", years:"2005-", note:"Sporting CP, Manchester United, Fenerbahce, Valencia, Lazio, Orlando City, Venezia, Melbourne Victory"},
+      {name:"Bruno Fernandes", cn:"布鲁诺·费尔南德斯", nick:"B费", flag:"🇵🇹", country:"Portugal", pos:"MID", era:"2010s-2020s", years:"2012-", note:"Novara, Udinese, Sampdoria, Sporting CP, Manchester United"},
+      {name:"Bernardo Silva", cn:"贝尔纳多·席尔瓦", nick:"", flag:"🇵🇹", country:"Portugal", pos:"MID", era:"2010s-2020s", years:"2013-", note:"Benfica, Monaco, Manchester City"}
+    ];
+
+    players.push(...extraPlayers);
+
     const localNames = {
       "Pele": {cn: "贝利", nick: "球王 / 黑珍珠"},
       "Diego Maradona": {cn: "迭戈·马拉多纳", nick: "球王 / 上帝之手"},
@@ -891,13 +1081,74 @@
       FWD: "前锋"
     };
 
-    const xiLimits = {GK: 1, DEF: 4, MID: 3, FWD: 3};
-    const xiRows = [
-      {pos: "FWD", className: "forwards"},
-      {pos: "MID", className: "mids"},
-      {pos: "DEF", className: "defs"},
-      {pos: "GK", className: "gk"}
-    ];
+    const formations = {
+      "433": {
+        label: "4-3-3",
+        rows: [
+          {line: "FWD", slots: [["LW", "左边锋", "FWD"], ["ST", "中锋", "FWD"], ["RW", "右边锋", "FWD"]]},
+          {line: "MID", slots: [["LCM", "左中场", "MID"], ["CM", "中场", "MID"], ["RCM", "右中场", "MID"]]},
+          {line: "DEF", slots: [["LB", "左后卫", "DEF"], ["LCB", "左中卫", "DEF"], ["RCB", "右中卫", "DEF"], ["RB", "右后卫", "DEF"]]},
+          {line: "GK", slots: [["GK", "门将", "GK"]]}
+        ]
+      },
+      "4231": {
+        label: "4-2-3-1",
+        rows: [
+          {line: "FWD", slots: [["ST", "中锋", "FWD"]]},
+          {line: "MID", slots: [["LAM", "左前腰", "MID"], ["AM", "前腰", "MID"], ["RAM", "右前腰", "MID"]]},
+          {line: "MID", slots: [["LDM", "左后腰", "MID"], ["RDM", "右后腰", "MID"]]},
+          {line: "DEF", slots: [["LB", "左后卫", "DEF"], ["LCB", "左中卫", "DEF"], ["RCB", "右中卫", "DEF"], ["RB", "右后卫", "DEF"]]},
+          {line: "GK", slots: [["GK", "门将", "GK"]]}
+        ]
+      },
+      "4321": {
+        label: "4-3-2-1 圣诞树",
+        rows: [
+          {line: "FWD", slots: [["ST", "中锋", "FWD"]]},
+          {line: "FWD", slots: [["LF", "左影锋", "FWD"], ["RF", "右影锋", "FWD"]]},
+          {line: "MID", slots: [["LCM", "左中场", "MID"], ["CM", "中场", "MID"], ["RCM", "右中场", "MID"]]},
+          {line: "DEF", slots: [["LB", "左后卫", "DEF"], ["LCB", "左中卫", "DEF"], ["RCB", "右中卫", "DEF"], ["RB", "右后卫", "DEF"]]},
+          {line: "GK", slots: [["GK", "门将", "GK"]]}
+        ]
+      },
+      "442": {
+        label: "4-4-2",
+        rows: [
+          {line: "FWD", slots: [["LS", "左前锋", "FWD"], ["RS", "右前锋", "FWD"]]},
+          {line: "MID", slots: [["LM", "左中场", "MID"], ["LCM", "左中场", "MID"], ["RCM", "右中场", "MID"], ["RM", "右中场", "MID"]]},
+          {line: "DEF", slots: [["LB", "左后卫", "DEF"], ["LCB", "左中卫", "DEF"], ["RCB", "右中卫", "DEF"], ["RB", "右后卫", "DEF"]]},
+          {line: "GK", slots: [["GK", "门将", "GK"]]}
+        ]
+      },
+      "352": {
+        label: "3-5-2",
+        rows: [
+          {line: "FWD", slots: [["LS", "左前锋", "FWD"], ["RS", "右前锋", "FWD"]]},
+          {line: "MID", slots: [["LM", "左翼卫", "MID"], ["LCM", "左中场", "MID"], ["CM", "中场", "MID"], ["RCM", "右中场", "MID"], ["RM", "右翼卫", "MID"]]},
+          {line: "DEF", slots: [["LCB", "左中卫", "DEF"], ["CB", "中卫", "DEF"], ["RCB", "右中卫", "DEF"]]},
+          {line: "GK", slots: [["GK", "门将", "GK"]]}
+        ]
+      },
+      "343": {
+        label: "3-4-3",
+        rows: [
+          {line: "FWD", slots: [["LW", "左边锋", "FWD"], ["ST", "中锋", "FWD"], ["RW", "右边锋", "FWD"]]},
+          {line: "MID", slots: [["LM", "左翼卫", "MID"], ["LCM", "左中场", "MID"], ["RCM", "右中场", "MID"], ["RM", "右翼卫", "MID"]]},
+          {line: "DEF", slots: [["LCB", "左中卫", "DEF"], ["CB", "中卫", "DEF"], ["RCB", "右中卫", "DEF"]]},
+          {line: "GK", slots: [["GK", "门将", "GK"]]}
+        ]
+      },
+      "532": {
+        label: "5-3-2",
+        rows: [
+          {line: "FWD", slots: [["LS", "左前锋", "FWD"], ["RS", "右前锋", "FWD"]]},
+          {line: "MID", slots: [["LCM", "左中场", "MID"], ["CM", "中场", "MID"], ["RCM", "右中场", "MID"]]},
+          {line: "DEF", slots: [["LWB", "左翼卫", "DEF"], ["LCB", "左中卫", "DEF"], ["CB", "中卫", "DEF"], ["RCB", "右中卫", "DEF"], ["RWB", "右翼卫", "DEF"]]},
+          {line: "GK", slots: [["GK", "门将", "GK"]]}
+        ]
+      }
+    };
+    const defaultFormation = "433";
     const storageKey = "world-football-user-picks-v2";
 
     let mode = "all";
@@ -911,12 +1162,75 @@
     }
 
     players.forEach((player, index) => {
-      Object.assign(player, localNames[player.name] || {cn: player.name, nick: ""});
+      Object.assign(player, {cn: player.cn || player.name, nick: player.nick || ""}, localNames[player.name] || {});
       player.id = makeId(player, index);
     });
 
     const playerById = new Map(players.map(player => [player.id, player]));
     let picks = loadPicks();
+
+    function currentFormationKey() {
+      return formations[picks?.formation] ? picks.formation : defaultFormation;
+    }
+
+    function currentFormation() {
+      return formations[currentFormationKey()];
+    }
+
+    function formationRows(key = currentFormationKey()) {
+      return formations[key].rows.map(row => ({
+        line: row.line,
+        slots: row.slots.map(([role, name, line]) => ({role, name, line}))
+      }));
+    }
+
+    function formationSlots(key = currentFormationKey()) {
+      return formationRows(key).flatMap(row => row.slots);
+    }
+
+    function emptyXiSlots(key = currentFormationKey()) {
+      return Array.from({length: formationSlots(key).length}, () => "");
+    }
+
+    function xiSlotIds() {
+      return Array.isArray(picks.xiSlots) ? picks.xiSlots : emptyXiSlots();
+    }
+
+    function xiIds() {
+      return xiSlotIds().filter(Boolean);
+    }
+
+    function xiCount() {
+      return xiIds().length;
+    }
+
+    function canFitSlot(player, slot) {
+      if (!player || !slot) return false;
+      if (slot.line === "GK") return player.pos === "GK";
+      return player.pos !== "GK";
+    }
+
+    function firstOpenSlotFor(player, slotIds = xiSlotIds(), key = currentFormationKey()) {
+      const slots = formationSlots(key);
+      if (player.pos !== "GK") {
+        const exact = slots.findIndex((slot, index) => !slotIds[index] && slot.line === player.pos && canFitSlot(player, slot));
+        if (exact !== -1) return exact;
+      }
+      return slots.findIndex((slot, index) => !slotIds[index] && canFitSlot(player, slot));
+    }
+
+    function placePlayerInSlots(id, slotIds, key) {
+      const player = playerById.get(id);
+      if (!player || slotIds.includes(id)) return false;
+      const index = firstOpenSlotFor(player, slotIds, key);
+      if (index === -1) return false;
+      slotIds[index] = id;
+      return true;
+    }
+
+    function syncXiLegacy() {
+      picks.xi = xiIds();
+    }
 
     function fillSelect(select, first, values) {
       select.innerHTML = "";
@@ -957,16 +1271,29 @@
     }
 
     function sanitizePicks(raw) {
-      const xiCounts = {GK: 0, DEF: 0, MID: 0, FWD: 0};
-      const xi = [];
-      uniqueValidIds(raw.xi, 11).forEach(id => {
-        const player = playerById.get(id);
-        if (player && xi.length < 11 && xiCounts[player.pos] < xiLimits[player.pos]) {
-          xi.push(id);
-          xiCounts[player.pos] += 1;
-        }
-      });
-      return {xi, top10: uniqueValidIds(raw.top10, 10)};
+      const formation = formations[raw.formation] ? raw.formation : defaultFormation;
+      const slots = formationSlots(formation);
+      const xiSlots = Array.from({length: slots.length}, () => "");
+      const source = Array.isArray(raw.xiSlots) ? raw.xiSlots : raw.xi;
+      const seen = new Set();
+
+      if (Array.isArray(source)) {
+        source.slice(0, 22).forEach((id, sourceIndex) => {
+          if (!id || seen.has(id) || !playerById.has(id)) return;
+          const player = playerById.get(id);
+          const directIndex = sourceIndex < xiSlots.length && !xiSlots[sourceIndex] && canFitSlot(player, slots[sourceIndex])
+            ? sourceIndex
+            : -1;
+          if (directIndex !== -1) {
+            xiSlots[directIndex] = id;
+            seen.add(id);
+            return;
+          }
+          if (placePlayerInSlots(id, xiSlots, formation)) seen.add(id);
+        });
+      }
+
+      return {formation, xiSlots, xi: xiSlots.filter(Boolean), top10: uniqueValidIds(raw.top10, 10)};
     }
 
     function filteredPlayers() {
@@ -1019,20 +1346,13 @@
     }
 
     function isInXi(player) {
-      return picks.xi.includes(player.id);
-    }
-
-    function xiPosCount(pos) {
-      return picks.xi.reduce((total, id) => {
-        const player = playerById.get(id);
-        return total + (player?.pos === pos ? 1 : 0);
-      }, 0);
+      return xiIds().includes(player.id);
     }
 
     function xiBlockReason(player) {
       if (isInXi(player)) return "";
-      if (picks.xi.length >= 11) return "阵容已满";
-      if (xiPosCount(player.pos) >= xiLimits[player.pos]) return `${labels[player.pos]}已满`;
+      if (xiCount() >= 11) return "阵容已满";
+      if (firstOpenSlotFor(player) === -1) return player.pos === "GK" ? "门将已满" : "空位已满";
       return "";
     }
 
@@ -1067,37 +1387,74 @@
       `;
     }
 
+    function canMoveXi(index, dir) {
+      const target = index + Number(dir);
+      const slots = formationSlots();
+      const slotIds = xiSlotIds();
+      if (!slotIds[index] || target < 0 || target >= slots.length) return false;
+      const player = playerById.get(slotIds[index]);
+      const targetPlayer = playerById.get(slotIds[target]);
+      return canFitSlot(player, slots[target]) && (!targetPlayer || canFitSlot(targetPlayer, slots[index]));
+    }
+
     function renderPitch() {
-      const selected = picks.xi.map(id => playerById.get(id)).filter(Boolean);
-      const slot = player => `
-        <div class="slot">
-          <b>${player.flag} ${player.cn}</b>
-          <small>${player.name}${player.nick ? ` · ${player.nick}` : ""}<br>${labels[player.pos]} · ${player.country}</small>
-          <button type="button" class="mini" data-action="remove-xi" data-id="${player.id}">移除</button>
-        </div>
-      `;
-      const emptySlot = pos => `
-        <div class="slot empty">
-          <b>空位</b>
-          <small>${labels[pos]}</small>
-        </div>
-      `;
-      const row = ({pos, className}) => {
-        const group = selected.filter(player => player.pos === pos);
-        const empty = Array.from({length: xiLimits[pos] - group.length}, () => emptySlot(pos)).join("");
-        return `<div class="pitch-row ${className}">${group.map(slot).join("")}${empty}</div>`;
+      const formation = currentFormation();
+      const rows = formationRows();
+      const slotIds = xiSlotIds();
+      const formationOptions = Object.entries(formations)
+        .map(([key, item]) => `<option value="${key}" ${key === currentFormationKey() ? "selected" : ""}>${item.label}</option>`)
+        .join("");
+      let index = 0;
+
+      const slotMarkup = slot => {
+        const slotIndex = index;
+        index += 1;
+        const player = playerById.get(slotIds[slotIndex]);
+        if (!player) {
+          return `
+            <div class="slot empty">
+              <span class="slot-role">${slot.role} · ${slot.name}</span>
+              <b>空位</b>
+              <small>${labels[slot.line]}</small>
+            </div>
+          `;
+        }
+        return `
+          <div class="slot">
+            <span class="slot-role">${slot.role} · ${slot.name}</span>
+            <b>${player.flag} ${player.cn}</b>
+            <small>${player.name}${player.nick ? ` · ${player.nick}` : ""}<br>${labels[player.pos]} · ${player.country}</small>
+            <div class="slot-actions">
+              <button type="button" class="mini" data-action="move-xi" data-index="${slotIndex}" data-dir="-1" ${canMoveXi(slotIndex, -1) ? "" : "disabled"} title="向前换位">←</button>
+              <button type="button" class="mini" data-action="move-xi" data-index="${slotIndex}" data-dir="1" ${canMoveXi(slotIndex, 1) ? "" : "disabled"} title="向后换位">→</button>
+              <button type="button" class="mini" data-action="remove-xi" data-id="${player.id}" title="移除">×</button>
+            </div>
+          </div>
+        `;
+      };
+
+      const rowMarkup = row => {
+        const count = row.slots.length;
+        const style = count === 1
+          ? "grid-template-columns:minmax(0,.72fr);justify-content:center;"
+          : `grid-template-columns:repeat(${count},minmax(0,1fr));`;
+        return `<div class="pitch-row line-${row.line.toLowerCase()}" style="${style}">${row.slots.map(slotMarkup).join("")}</div>`;
       };
 
       return `
         <div class="choice-bar">
-          <span>4-3-3 · ${picks.xi.length}/11</span>
+          <span>${formation.label} · ${xiCount()}/11</span>
+          <label class="formation-control">
+            <span>阵型</span>
+            <select data-action="set-formation" aria-label="选择阵型">${formationOptions}</select>
+          </label>
           <div class="choice-actions">
-            <button type="button" class="mini" data-action="export-xi" ${picks.xi.length ? "" : "disabled"}>导出图片</button>
-            <button type="button" class="mini" data-action="clear-xi" ${picks.xi.length ? "" : "disabled"}>清空阵容</button>
+            <button type="button" class="mini" data-action="export-xi" ${xiCount() ? "" : "disabled"}>导出图片</button>
+            <button type="button" class="mini" data-action="clear-xi" ${xiCount() ? "" : "disabled"}>清空阵容</button>
           </div>
         </div>
         <div class="pitch" aria-label="我的历史最佳阵容">
-          ${xiRows.map(row).join("")}
+          ${rows.map(rowMarkup).join("")}
         </div>
       `;
     }
@@ -1173,7 +1530,7 @@
       ctx.fillText(text, x, y);
     }
 
-    function drawPlayerTile(ctx, player, x, y, width, height, rank = "") {
+    function drawPlayerTile(ctx, player, x, y, width, height, rank = "", role = "") {
       roundRect(ctx, x, y, width, height, 14);
       ctx.fillStyle = "rgba(255,255,255,.92)";
       ctx.fill();
@@ -1188,6 +1545,7 @@
       }
       const nameX = x + (rank ? 66 : 18);
       drawText(ctx, `${player.flag} ${player.cn}`, nameX, y + 16, 22, "#1e2522", "850");
+      if (role) drawText(ctx, role, x + width - 16, y + 18, 13, "#1f6f55", "850", "right");
       drawText(ctx, player.name, nameX, y + 45, 15, "#66706b", "650");
       if (player.nick) drawText(ctx, player.nick, nameX, y + 68, 14, "#1f6f55", "750");
     }
@@ -1200,15 +1558,22 @@
     }
 
     function exportXiImage() {
-      const selected = picks.xi.map(id => playerById.get(id)).filter(Boolean);
+      const selected = xiIds().map(id => playerById.get(id)).filter(Boolean);
       if (!selected.length) return;
+      const rows = formationRows();
+      const slotIds = xiSlotIds();
+      const formation = currentFormation();
       const {canvas, ctx} = canvasKit(1200, 1000);
       ctx.fillStyle = "#f4f6f2";
       ctx.fillRect(0, 0, 1200, 1000);
       drawText(ctx, "我的世界足坛历史最佳阵容", 600, 44, 40, "#173832", "900", "center");
-      drawText(ctx, `制作者：锅巴32595 · ${selected.length}/11`, 600, 96, 18, "#66706b", "650", "center");
+      drawText(ctx, `${formation.label} · 制作者：锅巴32595 · ${selected.length}/11`, 600, 96, 18, "#66706b", "650", "center");
 
-      roundRect(ctx, 70, 145, 1060, 760, 20);
+      const pitchX = 70;
+      const pitchY = 145;
+      const pitchW = 1060;
+      const pitchH = 760;
+      roundRect(ctx, pitchX, pitchY, pitchW, pitchH, 20);
       ctx.fillStyle = "#1f6f55";
       ctx.fill();
       ctx.strokeStyle = "rgba(255,255,255,.7)";
@@ -1218,30 +1583,34 @@
       ctx.lineWidth = 1;
       for (let i = 1; i < 12; i += 1) {
         ctx.beginPath();
-        ctx.moveTo(70 + i * 88, 145);
-        ctx.lineTo(70 + i * 88, 905);
+        ctx.moveTo(pitchX + i * 88, pitchY);
+        ctx.lineTo(pitchX + i * 88, pitchY + pitchH);
         ctx.stroke();
       }
 
-      const rowY = {FWD: 240, MID: 430, DEF: 620, GK: 790};
-      xiRows.forEach(({pos}) => {
-        const group = selected.filter(player => player.pos === pos);
-        const count = xiLimits[pos];
+      let index = 0;
+      const rowH = pitchH / rows.length;
+      rows.forEach((row, rowIndex) => {
+        const count = row.slots.length;
         const gap = 26;
-        const tileW = pos === "GK" ? 280 : 230;
+        const tileW = Math.min(count === 1 ? 300 : 230, (pitchW - (count - 1) * gap - 80) / count);
+        const tileH = rows.length > 4 ? 92 : 102;
         const total = count * tileW + (count - 1) * gap;
         const startX = 600 - total / 2;
-        Array.from({length: count}, (_, index) => group[index] || null).forEach((player, index) => {
-          const x = startX + index * (tileW + gap);
-          const y = rowY[pos];
+        const y = pitchY + rowIndex * rowH + rowH / 2 - tileH / 2;
+        row.slots.forEach((slot, slotIndex) => {
+          const player = playerById.get(slotIds[index]);
+          const x = startX + slotIndex * (tileW + gap);
           if (player) {
-            drawPlayerTile(ctx, player, x, y, tileW, 102);
+            drawPlayerTile(ctx, player, x, y, tileW, tileH, "", slot.role);
           } else {
-            roundRect(ctx, x, y, tileW, 102, 14);
+            roundRect(ctx, x, y, tileW, tileH, 14);
             ctx.fillStyle = "rgba(255,255,255,.18)";
             ctx.fill();
-            drawText(ctx, `${labels[pos]}空位`, x + tileW / 2, y + 37, 20, "rgba(255,255,255,.78)", "800", "center");
+            drawText(ctx, `${slot.role}空位`, x + tileW / 2, y + 26, 18, "rgba(255,255,255,.82)", "800", "center");
+            drawText(ctx, slot.name, x + tileW / 2, y + 53, 15, "rgba(255,255,255,.68)", "700", "center");
           }
+          index += 1;
         });
       });
 
@@ -1298,21 +1667,45 @@
       document.querySelector("#empty").classList.toggle("show", list.length === 0);
       document.querySelector("#totalCount").textContent = players.length;
       document.querySelector("#shownCount").textContent = list.length;
-      document.querySelector("#xiCount").textContent = `${picks.xi.length}/11`;
+      document.querySelector("#xiCount").textContent = `${xiCount()}/11`;
       document.querySelector("#topCount").textContent = `${picks.top10.length}/10`;
       document.querySelector("#listTitle").textContent = mode === "xi" ? "从球员库选择阵容" : mode === "top10" ? "从球员库选择前十" : "球员列表";
-      document.querySelector("#listHint").textContent = `${list.length} / ${players.length} · 阵容 ${picks.xi.length}/11 · 前十 ${picks.top10.length}/10`;
+      document.querySelector("#listHint").textContent = `${list.length} / ${players.length} · 阵容 ${xiCount()}/11 · 前十 ${picks.top10.length}/10`;
       renderSpotlight();
     }
 
     function toggleXi(id) {
       const player = playerById.get(id);
       if (!player) return;
-      if (picks.xi.includes(id)) {
-        picks.xi = picks.xi.filter(item => item !== id);
+      if (isInXi(player)) {
+        removeXi(id);
       } else if (!xiBlockReason(player)) {
-        picks.xi = [...picks.xi, id];
+        placePlayerInSlots(id, picks.xiSlots, currentFormationKey());
+        syncXiLegacy();
       }
+    }
+
+    function removeXi(id) {
+      picks.xiSlots = xiSlotIds().map(item => item === id ? "" : item);
+      syncXiLegacy();
+    }
+
+    function moveXi(index, dir) {
+      const target = Number(index) + Number(dir);
+      if (!canMoveXi(Number(index), Number(dir))) return;
+      const next = [...xiSlotIds()];
+      [next[index], next[target]] = [next[target], next[index]];
+      picks.xiSlots = next;
+      syncXiLegacy();
+    }
+
+    function setFormation(key) {
+      if (!formations[key] || key === currentFormationKey()) return;
+      const ids = xiIds();
+      picks.formation = key;
+      picks.xiSlots = emptyXiSlots(key);
+      ids.forEach(id => placePlayerInSlots(id, picks.xiSlots, key));
+      syncXiLegacy();
     }
 
     function toggleTop(id) {
@@ -1346,10 +1739,14 @@
       }
       if (action === "toggle-xi") toggleXi(id);
       if (action === "toggle-top") toggleTop(id);
-      if (action === "remove-xi") picks.xi = picks.xi.filter(item => item !== id);
+      if (action === "remove-xi") removeXi(id);
       if (action === "remove-top") picks.top10 = picks.top10.filter(item => item !== id);
+      if (action === "move-xi") moveXi(Number(button.dataset.index), button.dataset.dir);
       if (action === "move-top") moveTop(id, button.dataset.dir);
-      if (action === "clear-xi") picks.xi = [];
+      if (action === "clear-xi") {
+        picks.xiSlots = emptyXiSlots();
+        syncXiLegacy();
+      }
       if (action === "clear-top") picks.top10 = [];
       picks = sanitizePicks(picks);
       savePicks();
@@ -1372,6 +1769,15 @@
     document.querySelector("#spotlight").addEventListener("click", event => {
       const button = event.target.closest("button[data-action]");
       if (button && !button.disabled) handleAction(button);
+    });
+
+    document.querySelector("#spotlight").addEventListener("change", event => {
+      const select = event.target.closest("select[data-action='set-formation']");
+      if (!select) return;
+      setFormation(select.value);
+      picks = sanitizePicks(picks);
+      savePicks();
+      render();
     });
 
     Object.values(controls).forEach(control => control.addEventListener("input", render));
